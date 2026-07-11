@@ -1,0 +1,150 @@
+.hoursSection {
+  background: #2c1a0e;
+  color: #fff;
+  padding: 112px 0;
+  scroll-margin-top: 80px;
+}
+
+/* Override for headings on dark background */
+.headingLight {
+  color: #fff;
+}
+
+.hoursGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.hoursList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 24px;
+}
+
+.hoursRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hoursDayWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hoursIcon {
+  color: #c09a6b;
+}
+
+.hoursDay {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hoursValue {
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--font-dm-mono);
+  font-size: 14px;
+}
+
+.locationList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.locationItem,
+.locationItemRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.locationTitle {
+  margin: 0 0 4px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.locationText {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.infoBanner {
+  margin-top: 24px;
+  padding: 16px 18px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.infoBannerText {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.hoursImageWrap {
+  position: relative;
+}
+
+.hoursImage {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+  border-radius: 2px;
+}
+
+.hoursImageLabel {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  padding: 14px 16px;
+  background: rgba(250, 246, 240, 0.9);
+  border-radius: 2px;
+  border: 1px solid rgba(44, 26, 14, 0.08);
+}
+
+.hoursLabelLabel {
+  margin: 0 0 4px;
+  color: #7a6557;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-dm-mono);
+}
+
+.hoursLabelValue {
+  margin: 0;
+  color: #2c1a0e;
+  font-family: var(--font-playfair-display);
+  font-size: 18px;
+}
+
+@media (max-width: 900px) {
+  .hoursGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .hoursSection {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+}
