@@ -1,12 +1,30 @@
 import { Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 import styles from "./Navbar.module.css";
 import { NAV_LINKS } from "./data";
 
 export default function Navbar({ scrolled, mobileOpen, setMobileOpen }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
   const scrollTo = (id) => {
-    document.getElementById(id.toLowerCase())?.scrollIntoView({ behavior: "smooth" });
     setMobileOpen(false);
+    if (pathname !== "/") {
+      router.push(`/#${id.toLowerCase()}`);
+    } else {
+      document.getElementById(id.toLowerCase())?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const goHome = (e) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    if (pathname !== "/") {
+      router.push("/#home");
+    } else {
+      document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   return (
@@ -15,7 +33,7 @@ export default function Navbar({ scrolled, mobileOpen, setMobileOpen }) {
       aria-label="Primary navigation"
     >
       <div className={styles.navInner}>
-        <a href="#home" className={styles.brandLink}>
+        <a href="/#home" className={styles.brandLink} onClick={goHome}>
           <img src="/cafemuseo_logo.jpg" alt="Cafe Museo Logo" className={styles.brandLogo} />
           <div className={styles.brandTextWrap}>
             <span className={styles.brandName}>Cafe Museo</span>

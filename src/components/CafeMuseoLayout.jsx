@@ -32,7 +32,7 @@ export default function CafeMuseoLayout() {
       <ReservationsSection />
       <HoursSection />
       <AboutSection />
-      <ReviewsSection />
+      <ReviewsSection previewMode={true} />
       <Footer />
     </div>
   );

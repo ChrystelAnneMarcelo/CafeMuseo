@@ -27,15 +27,34 @@
 
 .reviewPhotoWrap {
   height: 176px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   background: #eee;
+  display: flex;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.reviewPhotoWrap::-webkit-scrollbar {
+  display: none;
 }
 
 .reviewPhoto {
-  width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  scroll-snap-align: start;
+}
+
+.reviewPhotoSingle {
+  width: 100%;
+  flex: 0 0 100%;
+}
+
+.reviewPhotoMulti {
+  width: 75%;
+  flex: 0 0 75%;
+  border-right: 2px solid #fff;
 }
 
 .reviewCardBody {
@@ -166,10 +185,44 @@
   cursor: pointer;
 }
 
-.reviewUploadPreview {
+.loadMoreWrap {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.loadMoreButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  min-height: 44px;
+  border: 1px solid rgba(44, 26, 14, 0.15);
+  border-radius: 2px;
+  background: transparent;
+  color: #2c1a0e;
+  font-family: var(--font-dm-sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.loadMoreButton:hover {
+  background: rgba(44, 26, 14, 0.05);
+}
+
+.reviewUploadPreviewGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reviewUploadPreviewMini {
   position: relative;
-  width: 100%;
-  height: 160px;
+  width: calc(33.333% - 6px);
+  aspect-ratio: 1;
   overflow: hidden;
   border-radius: 2px;
   border: 1px solid rgba(44, 26, 14, 0.08);
@@ -214,6 +267,171 @@
 
 .fileInput {
   display: none;
+}
+
+.reviewUploadButtonSmall {
+  width: calc(33.333% - 6px);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed rgba(44, 26, 14, 0.18);
+  background: #f4eee7;
+  color: #7a6557;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.typeSelectorRow {
+  display: flex;
+  gap: 8px;
+}
+
+.typeSelectorBtn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid rgba(44, 26, 14, 0.15);
+  border-radius: 2px;
+  background: transparent;
+  color: #7a6557;
+  font-family: var(--font-dm-sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.typeSelectorBtnActive {
+  background: #2c1a0e;
+  border-color: #2c1a0e;
+  color: #fff;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(44, 26, 14, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modalContent {
+  background: #faf6f0;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  border-radius: 2px;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #2c1a0e;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.modalGallerySingle {
+  position: relative;
+  width: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalNavBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: #2c1a0e;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s;
+}
+
+.modalNavBtn:hover {
+  background: #fff;
+}
+
+.modalNavLeft {
+  left: 16px;
+}
+
+.modalNavRight {
+  right: 16px;
+}
+
+.modalNavDots {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.modalNavDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.2s ease;
+}
+
+.modalNavDotActive {
+  background: #fff;
+  transform: scale(1.2);
+}
+
+.modalMedia {
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+.modalBody {
+  padding: 32px;
+}
+
+.modalQuote {
+  margin: 0 0 24px;
+  color: #2c1a0e;
+  font-family: var(--font-playfair-display);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.modalAuthor {
+  border-top: 1px solid rgba(44, 26, 14, 0.1);
+  padding-top: 16px;
 }
 
 @media (max-width: 900px) {

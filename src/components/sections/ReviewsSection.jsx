@@ -1,16 +1,42 @@
-import { useRef, useState } from "react";
-import { Camera, Send, Star, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Camera, ChevronLeft, ChevronRight, Send, Star, X } from "lucide-react";
 
 import styles from "./ReviewsSection.module.css";
 import shared from "./shared.module.css";
 import { TESTIMONIALS } from "./data";
 
-function ReviewCard({ name, rating, quote, sub, photoUrl }) {
+function isVideo(url) {
+  if (!url) return false;
+  return url.startsWith("data:video/") || !!url.match(/\.(mp4|webm|ogg)$/i);
+}
+
+function ReviewCard({ review, onClick }) {
+  const { name, rating, quote, sub, photoUrls } = review;
+  const photos = photoUrls || [];
+
   return (
-    <div className={styles.reviewCard}>
-      {photoUrl ? (
+    <div className={styles.reviewCard} onClick={() => onClick && onClick(review)} style={{ cursor: onClick ? "pointer" : "default" }}>
+      {photos.length > 0 ? (
         <div className={styles.reviewPhotoWrap}>
-          <img src={photoUrl} alt={`Photo by ${name}`} className={styles.reviewPhoto} />
+          {photos.map((url, i) => (
+            isVideo(url) ? (
+              <video 
+                key={i} 
+                src={url} 
+                muted
+                playsInline
+                className={`${styles.reviewPhoto} ${photos.length === 1 ? styles.reviewPhotoSingle : styles.reviewPhotoMulti}`} 
+              />
+            ) : (
+              <img 
+                key={i} 
+                src={url} 
+                alt={`Photo ${i + 1} by ${name}`} 
+                className={`${styles.reviewPhoto} ${photos.length === 1 ? styles.reviewPhotoSingle : styles.reviewPhotoMulti}`} 
+              />
+            )
+          ))}
         </div>
       ) : null}
 
@@ -32,6 +58,75 @@ function ReviewCard({ name, rating, quote, sub, photoUrl }) {
         <div>
           <p className={styles.reviewName}>{name}</p>
           <p className={styles.reviewSub}>{sub}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReviewModal({ review, onClose }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [review]);
+
+  if (!review) return null;
+  const photos = review.photoUrls || [];
+  const hasMultiple = photos.length > 1;
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + 1) % photos.length);
+  };
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
+  };
+
+  const currentUrl = photos[currentIndex] || "";
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+        <button className={styles.modalClose} onClick={onClose}><X size={24} /></button>
+        {photos.length > 0 && (
+          <div className={styles.modalGallerySingle}>
+            {isVideo(currentUrl) ? (
+              <video key={currentIndex} src={currentUrl} controls playsInline className={styles.modalMedia} />
+            ) : (
+              <img key={currentIndex} src={currentUrl} className={styles.modalMedia} alt="Review Media" />
+            )}
+
+            {hasMultiple && (
+              <>
+                <button type="button" className={`${styles.modalNavBtn} ${styles.modalNavLeft}`} onClick={handlePrev}>
+                  <ChevronLeft size={28} />
+                </button>
+                <button type="button" className={`${styles.modalNavBtn} ${styles.modalNavRight}`} onClick={handleNext}>
+                  <ChevronRight size={28} />
+                </button>
+                <div className={styles.modalNavDots}>
+                  {photos.map((_, idx) => (
+                    <div key={idx} className={`${styles.modalNavDot} ${idx === currentIndex ? styles.modalNavDotActive : ""}`} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        <div className={styles.modalBody}>
+          <div className={styles.starRow}>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Star key={index} size={16} className={index < review.rating ? styles.starActive : styles.starInactive} />
+            ))}
+          </div>
+          <p className={styles.modalQuote}>&ldquo;{review.quote}&rdquo;</p>
+          <div className={styles.modalAuthor}>
+            <p className={styles.reviewName}>{review.name}</p>
+            <p className={styles.reviewSub}>{review.sub}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -67,20 +162,33 @@ function StarPicker({ value, onChange }) {
   );
 }
 
-export default function ReviewsSection() {
+export default function ReviewsSection({ previewMode = false }) {
   const [userReviews, setUserReviews] = useState([]);
-  const [form, setForm] = useState({ name: "", rating: 0, text: "", photoUrl: null });
+  const [form, setForm] = useState({ name: "", rating: 0, text: "", type: "Cafe Visit", photoUrls: [] });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [activeReview, setActiveReview] = useState(null);
   const fileRef = useRef(null);
 
   const handlePhoto = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
 
-    const reader = new FileReader();
-    reader.onload = () => setForm((current) => ({ ...current, photoUrl: reader.result }));
-    reader.readAsDataURL(file);
+    Promise.all(
+      files.map((file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      })
+    ).then((results) => {
+      setForm((current) => ({
+        ...current,
+        photoUrls: [...(current.photoUrls || []), ...results],
+      }));
+    });
   };
 
   const handleSubmit = (event) => {
@@ -107,13 +215,14 @@ export default function ReviewsSection() {
         name: form.name.trim(),
         rating: form.rating,
         text: form.text.trim(),
-        photoUrl: form.photoUrl,
+        photoUrls: form.photoUrls,
+        type: form.type,
         date: dateStr,
       },
       ...current,
     ]);
 
-    setForm({ name: "", rating: 0, text: "", photoUrl: null });
+    setForm({ name: "", rating: 0, text: "", type: "Cafe Visit", photoUrls: [] });
     setErrors({});
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 4000);
@@ -125,8 +234,8 @@ export default function ReviewsSection() {
       name: review.name,
       rating: review.rating,
       quote: review.text,
-      sub: review.date,
-      photoUrl: review.photoUrl,
+      sub: review.type ? `${review.type} • ${review.date}` : review.date,
+      photoUrls: review.photoUrls || [],
     })),
     ...TESTIMONIALS.map((testimonial, index) => ({
       id: -index - 1,
@@ -134,7 +243,7 @@ export default function ReviewsSection() {
       rating: 5,
       quote: testimonial.quote,
       sub: testimonial.event,
-      photoUrl: null,
+      photoUrls: testimonial.photoUrls || (testimonial.photoUrl ? [testimonial.photoUrl] : []),
     })),
   ];
 
@@ -147,17 +256,48 @@ export default function ReviewsSection() {
         </div>
 
         <div className={styles.reviewGrid}>
-          {allCards.map((review) => (
-            <ReviewCard key={review.id} {...review} />
+          {allCards.slice(0, previewMode ? 3 : visibleCount).map((review) => (
+            <ReviewCard key={review.id} review={review} onClick={setActiveReview} />
           ))}
         </div>
 
-        <div className={styles.reviewFormWrap}>
-          <div className={styles.reviewFormCard}>
-            <h3 className={styles.reviewFormTitle}>Share your experience</h3>
-            <p className={styles.reviewFormDescription}>
-              Visited recently? We would love to hear from you.
-            </p>
+        {previewMode ? (
+          <div className={styles.loadMoreWrap}>
+            <Link href="/reviews" className={styles.loadMoreButton} style={{ textDecoration: 'none' }}>
+              See all reviews & share yours
+            </Link>
+          </div>
+        ) : (
+          <>
+            {(visibleCount < allCards.length || visibleCount > 6) && (
+              <div className={styles.loadMoreWrap}>
+                {visibleCount < allCards.length && (
+                  <button
+                    type="button"
+                    className={styles.loadMoreButton}
+                    onClick={() => setVisibleCount((prev) => prev + 6)}
+                  >
+                    Show More Reviews
+                  </button>
+                )}
+                {visibleCount > 6 && (
+                  <button
+                    type="button"
+                    className={styles.loadMoreButton}
+                    onClick={() => setVisibleCount(6)}
+                  >
+                    Show Less
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className={styles.reviewFormWrap}>
+              <div className={styles.reviewFormCard}>
+                <h3 className={styles.reviewFormTitle}>Share your experience</h3>
+                <p className={styles.reviewFormDescription}>
+                  Visited recently? We would love to hear from you.
+                </p>
 
             {submitted ? (
               <div className={styles.reviewSuccessMessage}>
@@ -195,6 +335,22 @@ export default function ReviewsSection() {
               </div>
 
               <div>
+                <label className={shared.fieldLabel}>Visit Type *</label>
+                <div className={styles.typeSelectorRow}>
+                  {["Cafe Visit", "Catering Service"].map((typeOpt) => (
+                    <button
+                      key={typeOpt}
+                      type="button"
+                      className={`${styles.typeSelectorBtn} ${form.type === typeOpt ? styles.typeSelectorBtnActive : ""}`}
+                      onClick={() => setForm(c => ({ ...c, type: typeOpt }))}
+                    >
+                      {typeOpt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <label className={shared.fieldLabel}>Your Review *</label>
                 <textarea
                   rows={4}
@@ -210,28 +366,49 @@ export default function ReviewsSection() {
               </div>
 
               <div>
-                <label className={shared.fieldLabel}>Add a Photo (optional)</label>
+                <label className={shared.fieldLabel}>Add Photos or Videos (optional)</label>
                 <input
                   ref={fileRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
+                  multiple
                   className={styles.fileInput}
                   onChange={handlePhoto}
                 />
 
-                {form.photoUrl ? (
-                  <div className={styles.reviewUploadPreview}>
-                    <img src={form.photoUrl} alt="Preview" className={styles.reviewUploadImage} />
-                    <button
-                      type="button"
-                      className={styles.reviewUploadRemove}
-                      onClick={() => {
-                        setForm((current) => ({ ...current, photoUrl: null }));
-                        if (fileRef.current) fileRef.current.value = "";
-                      }}
-                    >
-                      <X size={13} />
-                    </button>
+                {form.photoUrls && form.photoUrls.length > 0 ? (
+                  <div className={styles.reviewUploadPreviewGrid}>
+                    {form.photoUrls.map((url, i) => (
+                      <div key={i} className={styles.reviewUploadPreviewMini}>
+                        {isVideo(url) ? (
+                          <video src={url} className={styles.reviewUploadImage} />
+                        ) : (
+                          <img src={url} alt={`Preview ${i}`} className={styles.reviewUploadImage} />
+                        )}
+                        <button
+                          type="button"
+                          className={styles.reviewUploadRemove}
+                          onClick={() => {
+                            setForm((current) => ({
+                              ...current,
+                              photoUrls: current.photoUrls.filter((_, idx) => idx !== i),
+                            }));
+                            if (fileRef.current) fileRef.current.value = "";
+                          }}
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
+                    ))}
+                    {form.photoUrls.length < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => fileRef.current?.click()}
+                        className={styles.reviewUploadButtonSmall}
+                      >
+                        <Camera size={20} />
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <button
@@ -240,7 +417,7 @@ export default function ReviewsSection() {
                     className={styles.reviewUploadButton}
                   >
                     <Camera size={20} />
-                    <span>Click to upload a photo</span>
+                    <span>Click to upload photos/videos</span>
                   </button>
                 )}
               </div>
@@ -252,7 +429,10 @@ export default function ReviewsSection() {
             </form>
           </div>
         </div>
+        </>
+        )}
       </div>
+      <ReviewModal review={activeReview} onClose={() => setActiveReview(null)} />
     </section>
   );
 }
