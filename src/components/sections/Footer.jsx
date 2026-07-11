@@ -11,9 +11,9 @@ export default function Footer() {
         <div className={styles.footerGrid}>
           <div>
             <p className={styles.footerBrand}>Cafe Museo</p>
-            <p className={styles.footerTag}>DLSU–D · Est. 2011</p>
+            <p className={styles.footerTag}>DLSU–D</p>
             <p className={styles.footerText}>
-              Delicious homey dishes and drinks enjoyed in the middle of nature — with a
+              Delicious homey dishes and drinks enjoyed in the middle of nature with a
               lakeside view inside De La Salle University Dasmariñas.
             </p>
           </div>
@@ -54,12 +54,12 @@ export default function Footer() {
               </li>
             </ul>
             <a
-              href="https://cafemuseo.ph"
+              href="https://www.facebook.com/profile.php?id=61576679105893"
               target="_blank"
               rel="noreferrer"
               className={styles.footerExternalLink}
             >
-              cafemuseo.ph ↗
+              facebook.com/cafemuseodldsu ↗
             </a>
           </div>
         </div>

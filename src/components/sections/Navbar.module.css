@@ -73,6 +73,7 @@
 }
 
 .navLinkButton {
+  position: relative;
   border: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.92);
@@ -80,10 +81,37 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.navLinkButton:hover {
+  color: #fff;
+}
+
+/* Custom animated underline */
+.navLinkButton::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+  transform-origin: center;
+}
+
+.navLinkButton:hover::after {
+  transform: scaleX(1);
 }
 
 .navbarShellScrolled .navLinkButton {
   color: #2c1a0e;
+}
+
+.navbarShellScrolled .navLinkButton:hover {
+  color: #6b3a2a;
 }
 
 .reserveButton,
