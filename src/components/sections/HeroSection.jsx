@@ -26,7 +26,7 @@ export default function HeroSection() {
       <div className={styles.heroContentWrap}>
         <div className={styles.heroContent}>
           <span className={styles.heroEyebrow}>
-            Est. 2011 · DLSU–Dasmariñas
+            DLSU–Dasmariñas
           </span>
           <h1 className={styles.heroHeading}>
             Homey food,

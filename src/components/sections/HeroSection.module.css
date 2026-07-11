@@ -96,6 +96,7 @@
   font-weight: 600;
   border: 1px solid transparent;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .primaryCta {
@@ -103,10 +104,22 @@
   color: #2c1a0e;
 }
 
+.primaryCta:hover {
+  background: #d4b087;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(192, 154, 107, 0.3);
+}
+
 .secondaryCta {
   border-color: rgba(255, 255, 255, 0.4);
   color: #fff;
   background: transparent;
+}
+
+.secondaryCta:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
+  transform: translateY(-2px);
 }
 
 .heroScrollIndicator {
