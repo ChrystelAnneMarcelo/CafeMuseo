@@ -1,0 +1,317 @@
+.menuSection {
+  background: #faf6f0;
+  padding: 112px 0;
+  scroll-margin-top: 80px;
+}
+
+.titleBlock {
+  max-width: 1104px;
+}
+
+.signaturePanel {
+  margin-top: 64px;
+  padding: 28px 32px;
+  background: #2c1a0e;
+  border-radius: 2px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panelLabel {
+  color: #c09a6b;
+  font-family: var(--font-dm-mono);
+  font-size: 12px;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.panelLine {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 20px;
+}
+
+.signatureCard {
+  min-height: 159.75px;
+  padding: 21px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-playfair-display);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cardDescription {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  line-height: 19.5px;
+}
+
+.cardPrice {
+  margin: 12px 0 0;
+  color: #c09a6b;
+  font-family: var(--font-dm-mono);
+  font-size: 14px;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 56px;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 11px 21px;
+  border: 1px solid rgba(107, 58, 42, 0.15);
+  background: #fff9f3;
+  color: #7a6557;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-dm-sans);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.activeChip {
+  background: #6b3a2a;
+  color: #faf6f0;
+  border-color: #6b3a2a;
+}
+
+.iconCircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  line-height: 1;
+}
+
+.iconCircle svg {
+  width: 100%;
+  height: 100%;
+}
+
+.activeChip .iconCircle svg {
+  color: #faf6f0;
+}
+
+.timeNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  background: rgba(44, 26, 14, 0.03);
+  border: 1px solid rgba(44, 26, 14, 0.08);
+}
+
+.timeNoteIcon {
+  color: #c09a6b;
+}
+
+.drinksLayout {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.drinkTableWrap {
+  margin-bottom: 0;
+}
+
+.drinkTableHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.drinkSectionTitle {
+  margin: 0;
+  font-family: var(--font-playfair-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c1a0e;
+}
+
+.drinkSectionNote {
+  margin: 0;
+  color: #7a6557;
+  font-family: var(--font-dm-mono);
+  font-size: 12px;
+}
+
+.drinkTableShell {
+  border: 1px solid rgba(44, 26, 14, 0.08);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.drinkTableHeaderRow,
+.drinkTableRow {
+  display: grid;
+  align-items: center;
+  gap: 0 1.5rem;
+}
+
+.drinkTableHeaderRow {
+  background: rgba(44, 26, 14, 0.03);
+  border-bottom: 1px solid rgba(44, 26, 14, 0.08);
+  padding: 10px 16px;
+  font-family: var(--font-dm-mono);
+  font-size: 12px;
+  color: #7a6557;
+}
+
+.drinkTableRow {
+  min-height: 45px;
+  padding: 12px 16px;
+}
+
+.drinkTableRow + .drinkTableRow {
+  border-top: 1px solid rgba(44, 26, 14, 0.08);
+}
+
+.drinkItemName {
+  color: #2c1a0e;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.drinkPriceCell {
+  text-align: right;
+  color: #2c1a0e;
+  font-family: var(--font-dm-mono);
+  font-size: 14px;
+}
+
+.menuGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.menuCard {
+  border: 1px solid rgba(44, 26, 14, 0.08);
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 2px;
+  padding: 20px;
+}
+
+.menuCardInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.menuCardText {
+  flex: 1;
+}
+
+.menuTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.menuCardTitle {
+  margin: 0;
+  font-family: var(--font-playfair-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c1a0e;
+}
+
+.menuCardDescription {
+  margin: 0;
+  color: #7a6557;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.menuCardPrice {
+  flex: 0 0 auto;
+  color: #6b3a2a;
+  font-family: var(--font-dm-mono);
+  font-size: 14px;
+}
+
+.menuFooter {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.menuFooterNote {
+  margin: 0;
+  color: #7a6557;
+  font-size: 14px;
+}
+
+.menuPdfLink {
+  display: inline-block;
+  margin-top: 8px;
+  color: #6b3a2a;
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .menuGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .menuSection {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  .cardGrid,
+  .menuGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterRow {
+    flex-wrap: wrap;
+  }
+}

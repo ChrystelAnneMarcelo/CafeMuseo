@@ -1,0 +1,205 @@
+.navbarShell {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.navbarShellScrolled {
+  background: rgba(250, 246, 240, 0.95);
+  border-bottom: 1px solid rgba(44, 26, 14, 0.08);
+  box-shadow: 0 10px 32px rgba(44, 26, 14, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.navInner {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brandLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandLogo {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.brandTextWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brandName {
+  color: #fff;
+  font-family: var(--font-playfair-display);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.brandSub {
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-dm-mono);
+  font-size: 10px;
+  line-height: 10px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.navbarShellScrolled .brandName,
+.navbarShellScrolled .brandSub {
+  color: #2c1a0e;
+}
+
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.navLinkButton {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: var(--font-dm-sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.navLinkButton:hover {
+  color: #fff;
+}
+
+/* Custom animated underline */
+.navLinkButton::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+  transform-origin: center;
+}
+
+.navLinkButton:hover::after {
+  transform: scaleX(1);
+}
+
+.navbarShellScrolled .navLinkButton {
+  color: #2c1a0e;
+}
+
+.navbarShellScrolled .navLinkButton:hover {
+  color: #6b3a2a;
+}
+
+.reserveButton,
+.mobileReserveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  background: #6b3a2a;
+  border-radius: 2px;
+  color: #faf6f0;
+  font-family: var(--font-dm-sans);
+  font-size: 14px;
+  font-weight: 500;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reserveButton:hover,
+.mobileReserveButton:hover {
+  background: #844c3a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 58, 42, 0.3);
+}
+
+.mobileToggle {
+  display: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.navbarShellScrolled .mobileToggle {
+  color: #2c1a0e;
+}
+
+.mobileMenu {
+  display: none;
+}
+
+.mobileMenuItem {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 10px 0;
+  color: #2c1a0e;
+  font-family: var(--font-dm-sans);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.mobileReserveButton {
+  width: 100%;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .desktopNav {
+    display: none;
+  }
+
+  .mobileToggle {
+    display: inline-flex;
+  }
+
+  .mobileMenu {
+    display: flex;
+    flex-direction: column;
+    padding: 0 24px 20px;
+    background: rgba(250, 246, 240, 0.98);
+    border-top: 1px solid rgba(44, 26, 14, 0.08);
+  }
+
+  .navbarShell {
+    background: rgba(250, 246, 240, 0.96);
+  }
+
+  .brandName,
+  .brandSub,
+  .navbarShellScrolled .brandName,
+  .navbarShellScrolled .brandSub {
+    color: #2c1a0e;
+  }
+
+  .navLinkButton {
+    color: #2c1a0e;
+  }
+}

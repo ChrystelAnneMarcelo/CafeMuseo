@@ -1,0 +1,150 @@
+.gallerySection {
+  background: #f1ebe3;
+  padding: 112px 0;
+  scroll-margin-top: 80px;
+}
+
+.sectionIntro {
+  max-width: 560px;
+}
+
+.avpWrapper {
+  margin-top: 28px;
+}
+
+.avpFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #2c1a0e;
+}
+
+.avpImage,
+.avpIframe {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avpGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(44, 26, 14, 0.35), rgba(44, 26, 14, 0.65));
+}
+
+.avpInnerContent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.avpPlayButton {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.avpPlayIcon {
+  color: #fff;
+}
+
+.avpLabelWrap {
+  text-align: center;
+}
+
+.avpTitle {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-playfair-display);
+  font-size: 20px;
+}
+
+.avpSubtitle {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.avpCornerLabel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 6px 10px;
+  border-radius: 2px;
+  background: rgba(44, 26, 14, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avpLabelText {
+  color: #c09a6b;
+  font-family: var(--font-dm-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.galleryGrid {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.galleryCard {
+  overflow: hidden;
+  border-radius: 2px;
+  background: #ddd;
+  aspect-ratio: 4 / 3;
+}
+
+.galleryCard:last-child:nth-child(3n + 1) {
+  grid-column: 1 / -1;
+  max-height: 280px;
+}
+
+.galleryImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.galleryCard:hover .galleryImage {
+  transform: scale(1.05);
+}
+
+.galleryFooterText {
+  margin: 24px 0 0;
+  text-align: center;
+  color: #7a6557;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .galleryGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .gallerySection {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  .galleryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,80 @@
+.aboutSection {
+  background: #f1ebe3;
+  padding: 96px 0;
+  overflow: hidden;
+  scroll-margin-top: 80px;
+}
+
+.aboutGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.aboutImageGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.aboutImagePrimary,
+.aboutImageSecondary {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+.aboutImagePrimary {
+  aspect-ratio: 3 / 4;
+}
+
+.aboutImageSecondary {
+  aspect-ratio: 1 / 1;
+  align-self: end;
+}
+
+.aboutDescriptionBottom {
+  margin-top: 18px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.statValue {
+  margin: 0;
+  color: #2c1a0e;
+  font-family: var(--font-playfair-display);
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.statLabel {
+  margin: 4px 0 0;
+  color: #7a6557;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .aboutGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .aboutSection {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  .aboutImageGrid,
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
