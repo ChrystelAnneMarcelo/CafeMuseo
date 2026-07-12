@@ -122,6 +122,35 @@ function Column({ title, items, page, setPage, renderCard }) {
   );
 }
 
+// Sound synthesis chime for realtime bookings notifications
+const playChime = () => {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const playTone = (freq, time, duration) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, time);
+      gain.gain.setValueAtTime(0.08, time); // Subtle volume
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(time);
+      osc.stop(time + duration);
+    };
+
+    const now = ctx.currentTime;
+    // Sweet arpeggio chime: C6 (1046.50 Hz) and E6 (1318.51 Hz)
+    playTone(1046.50, now, 0.4);
+    playTone(1318.51, now + 0.08, 0.5);
+  } catch (err) {
+    console.warn("Audio chime blocked or not supported:", err);
+  }
+};
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
@@ -167,6 +196,7 @@ export default function AdminPage() {
           const { eventType, new: newRecord, old: oldRecord } = payload;
           if (eventType === 'INSERT') {
             setBookings(curr => [newRecord, ...curr]);
+            playChime();
           } else if (eventType === 'UPDATE') {
             setBookings(curr => curr.map(b => b.id === newRecord.id ? newRecord : b));
           } else if (eventType === 'DELETE') {
@@ -282,9 +312,9 @@ export default function AdminPage() {
 
   const isAlreadyBooked = useMemo(() => {
     if (!approveModal.booking) return false;
-    return bookings.some(b => 
-      b.date === approveModal.booking.date && 
-      b.status === 'Approved' && 
+    return bookings.some(b =>
+      b.date === approveModal.booking.date &&
+      b.status === 'Approved' &&
       b.id !== approveModal.booking.id
     );
   }, [bookings, approveModal.booking]);
@@ -467,8 +497,9 @@ export default function AdminPage() {
             <textarea
               value={declineModal.reason}
               onChange={e => setDeclineModal(prev => ({ ...prev, reason: e.target.value }))}
-              placeholder={declineModal.action === 'Cancelled' ? "Optional: Reason for cancellation (this will be emailed to the customer)" : "Optional: Reason for declining (this will be emailed to the customer)"}
+              placeholder={declineModal.action === 'Cancelled' ? "Required: Reason for cancellation (this will be emailed to the customer)" : "Required: Reason for declining (this will be emailed to the customer)"}
               className={styles.reasonInput}
+              required
             />
             <div className={styles.modalActions}>
               <button onClick={() => setDeclineModal({ show: false, booking: null, reason: "", action: "Declined" })} className={styles.cancelBtn}>Go Back</button>
@@ -481,6 +512,7 @@ export default function AdminPage() {
                   message: declineModal.reason
                 })}
                 className={styles.confirmDeclineBtn}
+                disabled={!declineModal.reason || !declineModal.reason.trim()}
               >
                 Continue
               </button>
@@ -499,13 +531,6 @@ export default function AdminPage() {
                 ⚠️ Warning: Another reservation is already approved for this date ({approveModal.booking?.date}). You cannot approve multiple reservations for the same day.
               </p>
             )}
-            <textarea
-              value={approveModal.message}
-              onChange={e => setApproveModal(prev => ({ ...prev, message: e.target.value }))}
-              placeholder="Optional: Add a message for the customer (e.g. 'Looking forward to serving you!')"
-              className={styles.reasonInput}
-              disabled={isAlreadyBooked}
-            />
             <div className={styles.modalActions}>
               <button onClick={() => setApproveModal({ show: false, booking: null, message: "" })} className={styles.cancelBtn}>Cancel</button>
               <button
@@ -515,7 +540,7 @@ export default function AdminPage() {
                   show: true,
                   booking: approveModal.booking,
                   action: 'Approved',
-                  message: approveModal.message
+                  message: ''
                 })}
                 className={styles.confirmApproveBtn}
               >
@@ -533,9 +558,9 @@ export default function AdminPage() {
             <p>
               Are you sure you want to <strong>{
                 confirmModal.action === 'Approved' ? 'approve' :
-                confirmModal.action === 'Declined' ? 'decline' :
-                confirmModal.action === 'Cancelled' ? 'cancel' :
-                confirmModal.action.toLowerCase()
+                  confirmModal.action === 'Declined' ? 'decline' :
+                    confirmModal.action === 'Cancelled' ? 'cancel' :
+                      confirmModal.action.toLowerCase()
               }</strong> the reservation for <strong>{confirmModal.booking?.name}</strong>?
             </p>
             <p style={{ fontSize: '13px', color: '#666', marginTop: '10px' }}>

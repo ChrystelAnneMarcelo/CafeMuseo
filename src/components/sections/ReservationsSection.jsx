@@ -60,7 +60,7 @@ export default function ReservationsSection() {
   };
 
   const fetchReservedDates = () => {
-    fetch('/api/reserved-dates')
+    fetch(`/api/reserved-dates?t=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.json())
       .then(data => { if (data.dates) setReservedDates(data.dates); })
       .catch(console.error);
