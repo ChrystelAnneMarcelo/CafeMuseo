@@ -5,6 +5,8 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const { data, error } = await supabase

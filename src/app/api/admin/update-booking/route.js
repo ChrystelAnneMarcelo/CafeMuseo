@@ -11,6 +11,21 @@ export async function POST(req) {
     const data = await req.json();
     const { id, status, reason, message, customerEmail, customerName, date, time, venue } = data;
 
+    // 0. Double-check if date is already booked by another reservation before approving
+    if (status === 'Approved') {
+      const { data: existingBookings, error: checkError } = await supabase
+        .from('reservations')
+        .select('id')
+        .eq('date', date)
+        .eq('status', 'Approved')
+        .neq('id', id);
+
+      if (checkError) throw new Error(checkError.message);
+      if (existingBookings && existingBookings.length > 0) {
+        return NextResponse.json({ error: "Another reservation is already approved for this date." }, { status: 400 });
+      }
+    }
+
     // 1. Always update the database first
     const { data: updateData, error: dbError } = await supabase
       .from('reservations')

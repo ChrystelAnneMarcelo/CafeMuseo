@@ -152,7 +152,35 @@ export default function AdminPage() {
   const [confirmModal, setConfirmModal] = useState({ show: false, booking: null, action: "", message: "" });
 
   useEffect(() => {
-    if (loggedIn) fetchBookings();
+    if (!loggedIn) return;
+
+    fetchBookings();
+
+    // Subscribe to Postgres Realtime changes on reservations table
+    const channel = supabase
+      .channel('realtime-reservations')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reservations' },
+        (payload) => {
+          console.log("Received Realtime Payload:", payload);
+          const { eventType, new: newRecord, old: oldRecord } = payload;
+          if (eventType === 'INSERT') {
+            setBookings(curr => [newRecord, ...curr]);
+          } else if (eventType === 'UPDATE') {
+            setBookings(curr => curr.map(b => b.id === newRecord.id ? newRecord : b));
+          } else if (eventType === 'DELETE') {
+            setBookings(curr => curr.filter(b => b.id !== oldRecord.id));
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log("Realtime subscription connection status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [loggedIn]);
 
   const fetchBookings = async () => {
@@ -197,7 +225,8 @@ export default function AdminPage() {
         alert(`Booking ${newStatus.toLowerCase()} successfully! (Email could not be sent - Resend free tier only allows sending to your registered email)`);
       }
     } else {
-      alert("Failed to update booking. Check your database permissions.");
+      const errData = await res.json().catch(() => ({}));
+      alert(errData.error || "Failed to update booking. Check your database permissions.");
     }
     setUpdatingId(null);
     setConfirmModal({ show: false, booking: null, action: "", message: "" });
@@ -250,6 +279,15 @@ export default function AdminPage() {
   const historyBookings = useMemo(() => {
     return sortedAndFiltered.filter(b => ['Declined', 'Cancelled', 'Done', 'Expired'].includes(getResolvedStatus(b)));
   }, [sortedAndFiltered, todayStr]);
+
+  const isAlreadyBooked = useMemo(() => {
+    if (!approveModal.booking) return false;
+    return bookings.some(b => 
+      b.date === approveModal.booking.date && 
+      b.status === 'Approved' && 
+      b.id !== approveModal.booking.id
+    );
+  }, [bookings, approveModal.booking]);
 
   if (!loggedIn) {
     return (
@@ -456,16 +494,23 @@ export default function AdminPage() {
           <div className={styles.modal}>
             <h3>Approve Reservation</h3>
             <p>Approve {approveModal.booking?.name}&apos;s reservation for <strong>{approveModal.booking?.date}</strong> at <strong>{approveModal.booking?.time}</strong>?</p>
+            {isAlreadyBooked && (
+              <p style={{ color: '#dc3545', fontSize: '13px', margin: '12px 0', fontWeight: 'bold' }}>
+                ⚠️ Warning: Another reservation is already approved for this date ({approveModal.booking?.date}). You cannot approve multiple reservations for the same day.
+              </p>
+            )}
             <textarea
               value={approveModal.message}
               onChange={e => setApproveModal(prev => ({ ...prev, message: e.target.value }))}
               placeholder="Optional: Add a message for the customer (e.g. 'Looking forward to serving you!')"
               className={styles.reasonInput}
+              disabled={isAlreadyBooked}
             />
             <div className={styles.modalActions}>
               <button onClick={() => setApproveModal({ show: false, booking: null, message: "" })} className={styles.cancelBtn}>Cancel</button>
               <button
                 type="button"
+                disabled={isAlreadyBooked}
                 onClick={() => setConfirmModal({
                   show: true,
                   booking: approveModal.booking,

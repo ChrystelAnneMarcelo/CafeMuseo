@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Calendar, Mail, Phone, Users, Loader2 } from "lucide-react";
+import { Calendar, Mail, Phone, Users, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
 import styles from "./ReservationsSection.module.css";
@@ -39,6 +39,25 @@ export default function ReservationsSection() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reservedDates, setReservedDates] = useState([]);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [calendarDate, setCalendarDate] = useState(new Date());
+
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  const monthName = calendarDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const prevMonth = (e) => {
+    e.stopPropagation();
+    setCalendarDate(new Date(year, month - 1, 1));
+  };
+  const nextMonth = (e) => {
+    e.stopPropagation();
+    setCalendarDate(new Date(year, month + 1, 1));
+  };
 
   useEffect(() => {
     fetch('/api/reserved-dates')
@@ -174,7 +193,7 @@ export default function ReservationsSection() {
                     <Icon size={14} className={styles.contactIcon} />
                   </div>
                   <p className={styles.contactText}>
-                    {index === 0 ? "Mon–Fri catering available" : index === 1 ? "All group sizes welcome" : index === 2 ? "+63 920 906 0188" : "pleiadesfoodservice@gmail.com"}
+                    {index === 0 ? "Mon–Fri catering available" : index === 1 ? "All group sizes welcome" : index === 2 ? "+63 920 906 0188" : "cafemuseoph@gmail.com"}
                   </p>
                 </div>
               ))}
@@ -248,26 +267,85 @@ export default function ReservationsSection() {
                 </div>
 
                 <div className={shared.formGridTwo}>
-                  <div>
+                  <div style={{ position: 'relative' }}>
                     <label className={shared.fieldLabel}>Event Date *</label>
-                    <input
-                      type="date"
-                      min={today}
-                      value={form.date}
-                      onChange={(event) => {
-                        const val = event.target.value;
-                        updateField("date", val);
-                        if (reservedDates.includes(val)) {
-                          setErrors(prev => ({ ...prev, date: "This date is already reserved" }));
-                        }
-                      }}
+                    <button
+                      type="button"
+                      onClick={() => setShowDatePicker(!showDatePicker)}
                       className={`${shared.fieldInput} ${errors.date ? shared.fieldInputError : ""}`}
-                    />
+                      style={{
+                        textAlign: 'left',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        background: '#fff',
+                        width: '100%'
+                      }}
+                    >
+                      {form.date ? new Date(form.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Select event date..."}
+                      <Calendar size={16} style={{ color: '#6b3a2a' }} />
+                    </button>
                     {errors.date ? <p className={shared.fieldError}>{errors.date}</p> : null}
-                    {reservedDates.length > 0 && (
-                      <p style={{ fontSize: '12px', color: '#856404', marginTop: '6px' }}>
-                        Unavailable dates: {reservedDates.map(d => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })).join(', ')}
-                      </p>
+
+                    {showDatePicker && (
+                      <div className={styles.datepickerDropdown}>
+                        <div className={styles.datepickerHeader}>
+                          <button type="button" onClick={prevMonth} className={styles.datepickerNav}><ChevronLeft size={16} /></button>
+                          <span className={styles.datepickerTitle}>{monthName}</span>
+                          <button type="button" onClick={nextMonth} className={styles.datepickerNav}><ChevronRight size={16} /></button>
+                        </div>
+                        <div className={styles.datepickerWeekdays}>
+                          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
+                            <div key={d} className={styles.datepickerWeekday}>{d}</div>
+                          ))}
+                        </div>
+                        <div className={styles.datepickerGrid}>
+                          {Array.from({ length: firstDay }).map((_, i) => (
+                            <div key={`empty-${i}`} className={styles.datepickerDayEmpty} />
+                          ))}
+                          {Array.from({ length: daysInMonth }).map((_, i) => {
+                            const day = i + 1;
+                            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                            const isReserved = reservedDates.includes(dateStr);
+                            const isSelected = form.date === dateStr;
+                            
+                            const d = new Date();
+                            const offset = d.getTimezoneOffset();
+                            const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+                            const todayStr = localDate.toISOString().split('T')[0];
+                            const isPast = dateStr < todayStr;
+                            const isSelectable = !isPast && !isReserved;
+
+                            let dayCls = styles.datepickerDay;
+                            if (isReserved) dayCls += ` ${styles.datepickerDayReserved}`;
+                            if (isPast) dayCls += ` ${styles.datepickerDayPast}`;
+                            if (isSelected) dayCls += ` ${styles.datepickerDaySelected}`;
+
+                            return (
+                              <button
+                                key={day}
+                                type="button"
+                                disabled={!isSelectable}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateField("date", dateStr);
+                                  setShowDatePicker(false);
+                                }}
+                                className={dayCls}
+                                title={isReserved ? "Already Reserved" : ""}
+                              >
+                                {day}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className={styles.datepickerLegend}>
+                          <div className={styles.legendItem}>
+                            <span className={styles.legendDot} style={{ background: '#f8d7da', border: '1px solid #f5c6cb' }} /> Booked
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
 
