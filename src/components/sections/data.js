@@ -139,12 +139,12 @@ export const MENU_CATEGORIES = [
       },
       {
         name: "Croffle",
-        desc: "Croissant + waffle — Banana & Almond, Banana & Nutella, or Biscoff Cookie & Syrup",
+        desc: "Banana & Almond, Banana & Nutella, or Biscoff Cookie & Syrup",
         price: "₱120",
       },
       {
         name: "Waffle",
-        desc: "Plain waffle — add Oreo +₱15, Banana & Almond +₱30. Caramel, Chocolate, or Strawberry flavoured ₱95",
+        desc: "Add Oreo +₱15, Add Banana & Almond +₱30.",
         price: "₱65",
       },
     ],
