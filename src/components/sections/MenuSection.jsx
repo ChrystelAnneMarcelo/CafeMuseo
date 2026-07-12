@@ -18,7 +18,7 @@ function DrinkTable({ section, items, note, columns }) {
       <div className={styles.drinkTableShell}>
         <div
           className={styles.drinkTableHeaderRow}
-          style={{ gridTemplateColumns: `1fr repeat(${colCount}, 80px)` }}
+          style={{ gridTemplateColumns: `minmax(140px, 1fr) repeat(${colCount}, 80px)` }}
         >
           <span />
           {columns.map((col) => (
@@ -30,7 +30,7 @@ function DrinkTable({ section, items, note, columns }) {
           <div
             className={styles.drinkTableRow}
             key={item.name}
-            style={{ gridTemplateColumns: `1fr repeat(${colCount}, 80px)` }}
+            style={{ gridTemplateColumns: `minmax(140px, 1fr) repeat(${colCount}, 80px)` }}
           >
             <span className={styles.drinkItemName}>{item.name}</span>
             {columns.map((col) => (

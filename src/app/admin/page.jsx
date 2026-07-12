@@ -192,7 +192,7 @@ export default function AdminPage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (password === "museo-admin") setLoggedIn(true);
+    if (password === "CafeMuseo2011AnyaKayla") setLoggedIn(true);
     else alert("Incorrect password");
   };
 
