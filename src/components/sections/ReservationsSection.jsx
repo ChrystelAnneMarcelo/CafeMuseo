@@ -108,7 +108,7 @@ export default function ReservationsSection() {
     }
     if (!form.time) nextErrors.time = "Please select a time";
     if (!form.venue.trim()) nextErrors.venue = "Venue is required";
-    if (!form.eventType) nextErrors.eventType = "Please select an event type";
+    if (!form.eventType.trim()) nextErrors.eventType = "Event type is required";
 
     if (!form.pax || Number.isNaN(Number(form.pax)) || Number(form.pax) < 1) {
       nextErrors.pax = "Enter a valid guest count";
@@ -385,22 +385,14 @@ export default function ReservationsSection() {
 
                 <div className={shared.formGridTwo}>
                   <div>
-                    <label className={shared.fieldLabel}>Event Type *</label>
-                    <select
+                    <label className={shared.fieldLabel}>Event *</label>
+                    <input
+                      type="text"
                       value={form.eventType}
                       onChange={(event) => updateField("eventType", event.target.value)}
-                      className={`${shared.fieldInput} ${shared.selectInput} ${errors.eventType ? shared.fieldInputError : ""}`}
-                    >
-                      <option value="" disabled>
-                        Select event type
-                      </option>
-                      <option>Department Lunch / Dinner</option>
-                      <option>Organization Event</option>
-                      <option>Faculty Gathering</option>
-                      <option>University Function</option>
-                      <option>Team Building Meal</option>
-                      <option>Other</option>
-                    </select>
+                      placeholder="e.g. Gathering, Seminar"
+                      className={`${shared.fieldInput} ${errors.eventType ? shared.fieldInputError : ""}`}
+                    />
                     {errors.eventType ? <p className={shared.fieldError}>{errors.eventType}</p> : null}
                   </div>
 
@@ -421,7 +413,7 @@ export default function ReservationsSection() {
                     rows={3}
                     value={form.notes}
                     onChange={(event) => updateField("notes", event.target.value)}
-                    placeholder="Special requests, dietary needs, or anything else we should know..."
+                    placeholder="Special requests, package order, dietary needs, or anything else we should know..."
                     className={shared.textareaInput}
                   />
                 </div>
