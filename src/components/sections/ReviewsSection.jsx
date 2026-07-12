@@ -189,6 +189,22 @@ export default function ReviewsSection({ previewMode = false }) {
 
   useEffect(() => {
     fetchReviews();
+
+    // Subscribe to Postgres Realtime changes on reviews table
+    const channel = supabase
+      .channel('realtime-reviews-list')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reviews' },
+        (payload) => {
+          fetchReviews();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handlePhoto = (event) => {
