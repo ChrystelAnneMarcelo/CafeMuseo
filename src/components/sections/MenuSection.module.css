@@ -177,6 +177,19 @@
 .drinkTableShell {
   border: 1px solid rgba(44, 26, 14, 0.08);
   background: rgba(255, 255, 255, 0.4);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.drinkTableShell::-webkit-scrollbar {
+  height: 5px;
+}
+.drinkTableShell::-webkit-scrollbar-track {
+  background: rgba(44, 26, 14, 0.03);
+}
+.drinkTableShell::-webkit-scrollbar-thumb {
+  background: rgba(44, 26, 14, 0.2);
+  border-radius: 4px;
 }
 
 .drinkTableHeaderRow,
@@ -312,6 +325,42 @@
   }
 
   .filterRow {
-    flex-wrap: wrap;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 12px;
+    gap: 8px;
+  }
+
+  /* Show a subtle scrollbar so users know they can scroll left/right */
+  .filterRow::-webkit-scrollbar {
+    height: 4px;
+  }
+  .filterRow::-webkit-scrollbar-track {
+    background: rgba(44, 26, 14, 0.05);
+  }
+  .filterRow::-webkit-scrollbar-thumb {
+    background: rgba(44, 26, 14, 0.2);
+    border-radius: 4px;
+  }
+
+  .filterChip {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+
+  .iconCircle {
+    width: 14px;
+    height: 14px;
+  }
+
+  .drinkTableHeaderRow,
+  .drinkTableRow {
+    min-width: 480px;
+    gap: 0 10px;
   }
 }

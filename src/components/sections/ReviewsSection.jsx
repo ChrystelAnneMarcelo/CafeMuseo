@@ -47,6 +47,7 @@ function ReviewCard({ review, onClick }) {
               key={`${name}-${index}`}
               size={13}
               className={index < rating ? styles.starActive : styles.starInactive}
+              fill={index < rating ? "currentColor" : "none"}
             />
           ))}
         </div>
@@ -119,7 +120,12 @@ function ReviewModal({ review, onClose }) {
         <div className={styles.modalBody}>
           <div className={styles.starRow}>
             {Array.from({ length: 5 }).map((_, index) => (
-              <Star key={index} size={16} className={index < review.rating ? styles.starActive : styles.starInactive} />
+              <Star 
+                key={index} 
+                size={16} 
+                className={index < review.rating ? styles.starActive : styles.starInactive} 
+                fill={index < review.rating ? "currentColor" : "none"}
+              />
             ))}
           </div>
           <p className={styles.modalQuote}>&ldquo;{review.quote}&rdquo;</p>
@@ -155,6 +161,7 @@ function StarPicker({ value, onChange }) {
                 ? styles.starActiveLarge
                 : styles.starInactiveLarge
             }
+            fill={starValue <= (hovered || value) ? "currentColor" : "none"}
           />
         </button>
       ))}
