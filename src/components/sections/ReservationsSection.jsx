@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Calendar, Mail, Phone, Users, Loader2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
@@ -38,6 +38,14 @@ export default function ReservationsSection() {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [reservedDates, setReservedDates] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/reserved-dates')
+      .then(res => res.json())
+      .then(data => { if (data.dates) setReservedDates(data.dates); })
+      .catch(console.error);
+  }, []);
 
   const validate = () => {
     const nextErrors = {};
@@ -54,7 +62,11 @@ export default function ReservationsSection() {
       }
     }
 
-    if (!form.date) nextErrors.date = "Please select a date";
+    if (!form.date) {
+      nextErrors.date = "Please select a date";
+    } else if (reservedDates.includes(form.date)) {
+      nextErrors.date = "This date is already reserved";
+    }
     if (!form.time) nextErrors.time = "Please select a time";
     if (!form.venue.trim()) nextErrors.venue = "Venue is required";
     if (!form.eventType) nextErrors.eventType = "Please select an event type";
@@ -242,10 +254,21 @@ export default function ReservationsSection() {
                       type="date"
                       min={today}
                       value={form.date}
-                      onChange={(event) => updateField("date", event.target.value)}
+                      onChange={(event) => {
+                        const val = event.target.value;
+                        updateField("date", val);
+                        if (reservedDates.includes(val)) {
+                          setErrors(prev => ({ ...prev, date: "This date is already reserved" }));
+                        }
+                      }}
                       className={`${shared.fieldInput} ${errors.date ? shared.fieldInputError : ""}`}
                     />
                     {errors.date ? <p className={shared.fieldError}>{errors.date}</p> : null}
+                    {reservedDates.length > 0 && (
+                      <p style={{ fontSize: '12px', color: '#856404', marginTop: '6px' }}>
+                        Unavailable dates: {reservedDates.map(d => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })).join(', ')}
+                      </p>
+                    )}
                   </div>
 
                   <div>
