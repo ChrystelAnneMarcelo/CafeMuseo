@@ -306,6 +306,11 @@ export default function AdminPage() {
     return b.status || 'Pending';
   };
 
+  const uniqueEventTypes = useMemo(() => {
+    const types = bookings.map(b => b.type).filter(Boolean);
+    return [...new Set(types)].sort();
+  }, [bookings]);
+
   const sortedAndFiltered = useMemo(() => {
     return [...bookings]
       .filter(b => {
@@ -467,12 +472,9 @@ export default function AdminPage() {
               className={styles.filterSelect}
             >
               <option value="all">All Event Types</option>
-              <option value="Department Lunch / Dinner">Department Lunch / Dinner</option>
-              <option value="Organization Event">Organization Event</option>
-              <option value="Faculty Gathering">Faculty Gathering</option>
-              <option value="University Function">University Function</option>
-              <option value="Team Building Meal">Team Building Meal</option>
-              <option value="Other">Other</option>
+              {uniqueEventTypes.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
             </select>
             <select
               value={sortBy}
