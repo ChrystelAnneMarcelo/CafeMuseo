@@ -8,6 +8,13 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function POST(req) {
   try {
+    // Verify Authorization Header
+    const authHeader = req.headers.get('Authorization');
+    const adminPassword = process.env.ADMIN_PASSWORD || 'CafeMuseo2011AnyaKayla';
+    if (!authHeader || authHeader !== `Bearer ${adminPassword}`) {
+      return NextResponse.json({ error: "Unauthorized access. Invalid credentials." }, { status: 401 });
+    }
+
     const data = await req.json();
     const { id, status, reason, message, customerEmail, customerName, date, time, venue } = data;
 
