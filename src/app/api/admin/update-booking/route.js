@@ -58,10 +58,10 @@ export async function POST(req) {
               <h2 style="color: #6d4c41;">Your Reservation is Confirmed!</h2>
               <p>Hi ${customerName},</p>
               <p>We are excited to let you know that your reservation for <strong>${date}</strong> at <strong>${time}</strong> in <strong>${venue || 'our venue'}</strong> has been approved!</p>
-              ${adminMessage ? `<p><strong>Message from Cafe Museo:</strong> ${adminMessage}</p>` : ''}
+              <p>To finalize the coordination and details for your event, please reach out to us on our Facebook page (<strong>Cafe Museo</strong>) or reply directly to this email so we can discuss your menu preferences and specific requirements.</p>
               <p>We look forward to serving you.</p>
               <br/>
-              <p>Best,<br/>Cafe Museo Team</p>
+              <p>Best,<br/>Cafe Museo</p>
             </div>
           `;
         } else if (status === 'Declined') {
@@ -74,7 +74,7 @@ export async function POST(req) {
               ${adminMessage ? `<p><strong>Reason:</strong> ${adminMessage}</p>` : ''}
               <p>We hope to serve you another time!</p>
               <br/>
-              <p>Best,<br/>Cafe Museo Team</p>
+              <p>Best,<br/>Cafe Museo</p>
             </div>
           `;
         } else if (status === 'Cancelled') {
@@ -87,7 +87,7 @@ export async function POST(req) {
               ${adminMessage ? `<p><strong>Reason:</strong> ${adminMessage}</p>` : ''}
               <p>We sincerely apologize for the inconvenience. Please feel free to submit a new reservation for a different date.</p>
               <br/>
-              <p>Best,<br/>Cafe Museo Team</p>
+              <p>Best,<br/>Cafe Museo</p>
             </div>
           `;
         }
@@ -95,6 +95,7 @@ export async function POST(req) {
         await resend.emails.send({
           from: 'Cafe Museo <reservations@cafemuseo.ph>',
           to: customerEmail,
+          replyTo: 'cafemuseoph@gmail.com',
           subject: subject,
           html: html,
         });
