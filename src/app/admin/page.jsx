@@ -155,6 +155,16 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedToken = sessionStorage.getItem("adminToken");
+      if (savedToken) {
+        setPassword(savedToken);
+        setLoggedIn(true);
+      }
+    }
+  }, []);
+
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
@@ -220,10 +230,24 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === "museo-admin") setLoggedIn(true);
-    else alert("Incorrect password");
+    try {
+      const res = await fetch("/api/admin/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        sessionStorage.setItem("adminToken", password);
+        setLoggedIn(true);
+      } else {
+        alert("Incorrect password");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Verification failed. Please try again.");
+    }
   };
 
   const updateStatus = async (booking, newStatus, adminMessage = "") => {
@@ -231,7 +255,10 @@ export default function AdminPage() {
 
     const res = await fetch('/api/admin/update-booking', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${password}`
+      },
       body: JSON.stringify({
         id: booking.id,
         status: newStatus,
