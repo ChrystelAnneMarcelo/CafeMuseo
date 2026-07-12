@@ -93,7 +93,7 @@ export async function POST(req) {
         }
 
         await resend.emails.send({
-          from: 'Cafe Museo <onboarding@resend.dev>',
+          from: 'Cafe Museo <reservations@cafemuseo.ph>',
           to: customerEmail,
           subject: subject,
           html: html,

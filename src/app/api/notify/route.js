@@ -44,7 +44,7 @@ Notes: ${special_requests || 'None'}
       const resend = new Resend(resendApiKey);
       tasks.push(
         resend.emails.send({
-          from: 'Cafe Museo <onboarding@resend.dev>', // Only works for the verified email on the Resend account
+          from: 'Cafe Museo <reservations@cafemuseo.ph>',
           to: ownerEmail,
           subject: `New Booking: ${type} on ${date}`,
           html: emailHtml,
