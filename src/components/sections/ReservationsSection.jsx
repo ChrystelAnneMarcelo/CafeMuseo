@@ -59,11 +59,31 @@ export default function ReservationsSection() {
     setCalendarDate(new Date(year, month + 1, 1));
   };
 
-  useEffect(() => {
+  const fetchReservedDates = () => {
     fetch('/api/reserved-dates')
       .then(res => res.json())
       .then(data => { if (data.dates) setReservedDates(data.dates); })
       .catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchReservedDates();
+
+    // Subscribe to Postgres Realtime changes on reservations table
+    const channel = supabase
+      .channel('realtime-reservations-calendar')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reservations' },
+        (payload) => {
+          fetchReservedDates();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const validate = () => {
