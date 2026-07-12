@@ -50,7 +50,7 @@ export default function Footer() {
               </li>
               <li className={styles.footerContactItem}>
                 <Mail size={13} className={styles.footerContactIcon} />
-                <span className={styles.footerTextMuted}>pleiadesfoodservice@gmail.com</span>
+                <span className={styles.footerTextMuted}>cafemuseoph@gmail.com</span>
               </li>
             </ul>
             <a
@@ -66,7 +66,7 @@ export default function Footer() {
 
         <div className={styles.footerBottom}>
           <p className={styles.footerBottomText}>
-            © 2026 Cafe Museo · Pleiades Food Service. All rights reserved.
+            © 2026 Cafe Museo. All rights reserved.
           </p>
           <p className={styles.footerBottomText}>Dasmariñas, Cavite · Philippines</p>
         </div>

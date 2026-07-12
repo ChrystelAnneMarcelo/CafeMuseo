@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Calendar, Mail, Phone, Users } from "lucide-react";
+import { Calendar, Mail, Phone, Users, Loader2 } from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 import styles from "./ReservationsSection.module.css";
 import shared from "./shared.module.css";
@@ -36,12 +37,23 @@ export default function ReservationsSection() {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const nextErrors = {};
 
     if (!form.name.trim()) nextErrors.name = "Name is required";
     if (!form.email.includes("@")) nextErrors.email = "Valid email required";
+
+    if (!form.phone.trim()) {
+      nextErrors.phone = "Phone number is required";
+    } else {
+      const cleanPhone = form.phone.replace(/[\s-()]/g, "");
+      if (!/^(09|\+639)\d{9}$/.test(cleanPhone)) {
+        nextErrors.phone = "Valid PH number required (e.g. 09123456789 or +639...)";
+      }
+    }
+
     if (!form.date) nextErrors.date = "Please select a date";
     if (!form.time) nextErrors.time = "Please select a time";
     if (!form.venue.trim()) nextErrors.venue = "Venue is required";
@@ -56,8 +68,10 @@ export default function ReservationsSection() {
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (submitting) return;
+
     const nextErrors = validate();
 
     if (Object.keys(nextErrors).length > 0) {
@@ -65,8 +79,55 @@ export default function ReservationsSection() {
       return;
     }
 
+    setSubmitting(true);
     setErrors({});
-    setSubmitted(true);
+
+    const formatTime = (timeStr) => {
+      if (!timeStr) return timeStr;
+      const [h, m] = timeStr.split(':');
+      const hours = parseInt(h, 10);
+      const suffix = hours >= 12 ? "PM" : "AM";
+      const displayHours = hours % 12 || 12;
+      return `${displayHours}:${m} ${suffix}`;
+    };
+
+    const formattedTime = formatTime(form.time);
+
+    const { data, error } = await supabase.from('reservations').insert({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      venue: form.venue.trim(),
+      date: form.date,
+      time: formattedTime,
+      guests: form.pax,
+      type: form.eventType,
+      special_requests: form.notes.trim()
+    });
+
+    setSubmitting(false);
+
+    if (!error) {
+      fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          venue: form.venue.trim(),
+          date: form.date,
+          time: formattedTime,
+          guests: form.pax,
+          type: form.eventType,
+          special_requests: form.notes.trim()
+        })
+      }).catch(console.error);
+
+      setSubmitted(true);
+    } else {
+      console.error(error);
+    }
   };
 
   const updateField = (fieldName, value) => {
@@ -156,7 +217,7 @@ export default function ReservationsSection() {
 
                 <div className={shared.formGridTwo}>
                   <Field
-                    label="Phone Number"
+                    label="Phone Number *"
                     keyName="phone"
                     type="tel"
                     placeholder="+63 9XX XXX XXXX"
@@ -244,8 +305,9 @@ export default function ReservationsSection() {
                   />
                 </div>
 
-                <button type="submit" className={styles.submitButton}>
-                  Submit Reservation Inquiry
+                <button type="submit" className={styles.submitButton} disabled={submitting}>
+                  {submitting ? <Loader2 size={16} className={shared.spin} /> : null}
+                  {submitting ? "Submitting..." : "Submit Reservation Inquiry"}
                 </button>
 
                 <p className={styles.formNote}>

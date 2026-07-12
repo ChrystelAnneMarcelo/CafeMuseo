@@ -273,16 +273,7 @@ export const GALLERY_PHOTOS = [
   },
 ];
 
-export const TESTIMONIALS = Array.from({ length: 20 }).map((_, i) => ({
-  name: `Sample Reviewer ${i + 1}`,
-  event: i % 2 === 0 ? "Cafe Visit" : "Catering Service",
-  quote: i === 0 
-    ? "This is a placeholder review to show how the layout handles multiple lines. I'm also testing what a video looks like alongside photos!" 
-    : "This is a placeholder review to show how the layout handles multiple lines and wraps cards onto new rows once it exceeds three items.",
-  photoUrls: i === 0 
-    ? ["/CateringSample3.png", "/CafeMuseo_AVP.mp4", "/CateringSample5.jpg"] 
-    : (i === 1 ? ["/CateringSample1.jpg", "/CateringSample2.png"] : []),
-}));
+export const TESTIMONIALS = [];
 
 export const CONTACT_INFO = [
   { icon: Calendar, text: "Mon–Fri catering available" },

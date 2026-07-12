@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Camera, ChevronLeft, ChevronRight, Send, Star, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Send, Star, X, Loader2 } from "lucide-react";
 
 import styles from "./ReviewsSection.module.css";
 import shared from "./shared.module.css";
-import { TESTIMONIALS } from "./data";
+import { supabase } from "../../lib/supabase";
 
 function isVideo(url) {
   if (!url) return false;
@@ -163,36 +163,45 @@ function StarPicker({ value, onChange }) {
 }
 
 export default function ReviewsSection({ previewMode = false }) {
-  const [userReviews, setUserReviews] = useState([]);
-  const [form, setForm] = useState({ name: "", rating: 0, text: "", type: "Cafe Visit", photoUrls: [] });
+  const [dbReviews, setDbReviews] = useState([]);
+  const [form, setForm] = useState({ name: "", rating: 0, text: "", type: "Cafe Visit", mediaFiles: [] });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   const [activeReview, setActiveReview] = useState(null);
   const fileRef = useRef(null);
+
+  const fetchReviews = async () => {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (data && !error) setDbReviews(data);
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
 
   const handlePhoto = (event) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
-    Promise.all(
-      files.map((file) => {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
-      })
-    ).then((results) => {
-      setForm((current) => ({
-        ...current,
-        photoUrls: [...(current.photoUrls || []), ...results],
-      }));
-    });
+    const newMedia = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+
+    setForm((current) => ({
+      ...current,
+      mediaFiles: [...(current.mediaFiles || []), ...newMedia],
+    }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (submitting) return;
 
     const nextErrors = {};
     if (!form.name.trim()) nextErrors.name = "Please enter your name";
@@ -204,47 +213,61 @@ export default function ReviewsSection({ previewMode = false }) {
       return;
     }
 
-    const dateStr = new Date().toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    });
+    setSubmitting(true);
+    setErrors({});
 
-    setUserReviews((current) => [
-      {
-        id: Date.now(),
+    try {
+      const uploadedUrls = [];
+      for (const item of form.mediaFiles) {
+        if (item.file) {
+          const fileName = `${Date.now()}-${item.file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+          const { data, error } = await supabase.storage
+            .from('review-media')
+            .upload(fileName, item.file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+          if (data) {
+            const { data: publicData } = supabase.storage.from('review-media').getPublicUrl(fileName);
+            uploadedUrls.push(publicData.publicUrl);
+          }
+        }
+      }
+
+      const { data, error } = await supabase.from('reviews').insert({
         name: form.name.trim(),
         rating: form.rating,
-        text: form.text.trim(),
-        photoUrls: form.photoUrls,
-        type: form.type,
-        date: dateStr,
-      },
-      ...current,
-    ]);
+        quote: form.text.trim(),
+        visit_type: form.type,
+        photo_urls: uploadedUrls
+      });
 
-    setForm({ name: "", rating: 0, text: "", type: "Cafe Visit", photoUrls: [] });
-    setErrors({});
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 4000);
+      if (!error) {
+        setForm({ name: "", rating: 0, text: "", type: "Cafe Visit", mediaFiles: [] });
+        setSubmitted(true);
+        setTimeout(() => setSubmitted(false), 4000);
+        fetchReviews();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const allCards = [
-    ...userReviews.map((review) => ({
-      id: review.id,
-      name: review.name,
-      rating: review.rating,
-      quote: review.text,
-      sub: review.type ? `${review.type} • ${review.date}` : review.date,
-      photoUrls: review.photoUrls || [],
-    })),
-    ...TESTIMONIALS.map((testimonial, index) => ({
-      id: -index - 1,
-      name: testimonial.name,
-      rating: 5,
-      quote: testimonial.quote,
-      sub: testimonial.event,
-      photoUrls: testimonial.photoUrls || (testimonial.photoUrl ? [testimonial.photoUrl] : []),
-    })),
+    ...dbReviews.map((review) => {
+      const d = new Date(review.created_at);
+      const dateStr = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      return {
+        id: review.id,
+        name: review.name,
+        rating: review.rating,
+        quote: review.quote,
+        sub: review.visit_type ? `${review.visit_type} • ${dateStr}` : dateStr,
+        photoUrls: review.photo_urls || [],
+      };
+    })
   ];
 
   return (
@@ -376,14 +399,14 @@ export default function ReviewsSection({ previewMode = false }) {
                   onChange={handlePhoto}
                 />
 
-                {form.photoUrls && form.photoUrls.length > 0 ? (
+                {form.mediaFiles && form.mediaFiles.length > 0 ? (
                   <div className={styles.reviewUploadPreviewGrid}>
-                    {form.photoUrls.map((url, i) => (
+                    {form.mediaFiles.map((item, i) => (
                       <div key={i} className={styles.reviewUploadPreviewMini}>
-                        {isVideo(url) ? (
-                          <video src={url} className={styles.reviewUploadImage} />
+                        {item.file.type.startsWith('video/') ? (
+                          <video src={item.preview} className={styles.reviewUploadImage} />
                         ) : (
-                          <img src={url} alt={`Preview ${i}`} className={styles.reviewUploadImage} />
+                          <img src={item.preview} alt={`Preview ${i}`} className={styles.reviewUploadImage} />
                         )}
                         <button
                           type="button"
@@ -391,7 +414,7 @@ export default function ReviewsSection({ previewMode = false }) {
                           onClick={() => {
                             setForm((current) => ({
                               ...current,
-                              photoUrls: current.photoUrls.filter((_, idx) => idx !== i),
+                              mediaFiles: current.mediaFiles.filter((_, idx) => idx !== i),
                             }));
                             if (fileRef.current) fileRef.current.value = "";
                           }}
@@ -400,7 +423,7 @@ export default function ReviewsSection({ previewMode = false }) {
                         </button>
                       </div>
                     ))}
-                    {form.photoUrls.length < 5 && (
+                    {form.mediaFiles.length < 5 && (
                       <button
                         type="button"
                         onClick={() => fileRef.current?.click()}
@@ -422,9 +445,9 @@ export default function ReviewsSection({ previewMode = false }) {
                 )}
               </div>
 
-              <button type="submit" className={styles.reviewSubmitButton}>
-                <Send size={14} />
-                Post Review
+              <button type="submit" className={styles.reviewSubmitButton} disabled={submitting}>
+                {submitting ? <Loader2 size={14} className={shared.spin} /> : <Send size={14} />}
+                {submitting ? "Posting..." : "Post Review"}
               </button>
             </form>
           </div>

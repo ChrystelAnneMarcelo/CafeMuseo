@@ -47,7 +47,7 @@ export default function HoursSection() {
 
               <div className={styles.locationItemRow}>
                 <Mail size={15} className={styles.hoursIcon} />
-                <p className={styles.locationText}>pleiadesfoodservice@gmail.com</p>
+                <p className={styles.locationText}>cafemuseoph@gmail.com</p>
               </div>
             </div>
 
