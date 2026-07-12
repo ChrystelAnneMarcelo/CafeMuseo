@@ -34,8 +34,25 @@ const dmMono = DM_Mono({
 });
 
 export const metadata = {
-  title: "Cafe Museo",
-  description: "Cafe Museo menu layout inspired by the Figma design.",
+  title: "Cafe Museo | Cafe, Coffee & Catering in Dasmariñas, Cavite",
+  description: "Welcome to Cafe Museo DLSU-D. Enjoy comforting Filipino food, specialty coffee, and premium catering services. Book your catering packages or cafe tables online!",
+  keywords: ["Cafe Museo", "Cafe Museo DLSU-D", "Catering Dasmarinas", "Coffee Shop Cavite", "Cafe Museo Reservation"],
+  metadataBase: new URL('https://cafemuseo.ph'),
+  openGraph: {
+    title: "Cafe Museo | Cafe, Coffee & Catering",
+    description: "Welcome to Cafe Museo DLSU-D. Enjoy comforting Filipino food, specialty coffee, and premium catering services. Submit your reservation request online!",
+    url: "https://cafemuseo.ph",
+    siteName: "Cafe Museo",
+    images: [
+      {
+        url: "/cafemuseo_logo.jpg",
+        width: 800,
+        height: 800,
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }) {
