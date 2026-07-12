@@ -177,8 +177,6 @@
 .drinkTableShell {
   border: 1px solid rgba(44, 26, 14, 0.08);
   background: rgba(255, 255, 255, 0.4);
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .drinkTableHeaderRow,
@@ -315,17 +313,5 @@
 
   .filterRow {
     flex-wrap: wrap;
-    gap: 6px;
-  }
-  .filterChip {
-    padding: 8px 14px;
-    font-size: 13px;
-    min-height: auto;
-  }
-
-  .drinkTableHeaderRow,
-  .drinkTableRow {
-    min-width: 480px;
-    gap: 0 10px;
   }
 }
