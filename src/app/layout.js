@@ -6,6 +6,7 @@ import {
   Playfair_Display,
 } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,7 +63,10 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} ${dmSans.variable} ${playfairDisplay.variable} ${dmMono.variable}`}
       suppressHydrationWarning
     >
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

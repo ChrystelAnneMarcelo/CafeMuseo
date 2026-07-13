@@ -38,7 +38,6 @@ export default function ReservationsSection() {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [reservedDates, setReservedDates] = useState([]);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [calendarDate, setCalendarDate] = useState(new Date());
@@ -59,33 +58,6 @@ export default function ReservationsSection() {
     setCalendarDate(new Date(year, month + 1, 1));
   };
 
-  const fetchReservedDates = () => {
-    fetch(`/api/reserved-dates?t=${Date.now()}`, { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => { if (data.dates) setReservedDates(data.dates); })
-      .catch(console.error);
-  };
-
-  useEffect(() => {
-    fetchReservedDates();
-
-    // Subscribe to Postgres Realtime changes on reservations table
-    const channel = supabase
-      .channel('realtime-reservations-calendar')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'reservations' },
-        (payload) => {
-          fetchReservedDates();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
   const validate = () => {
     const nextErrors = {};
 
@@ -103,8 +75,6 @@ export default function ReservationsSection() {
 
     if (!form.date) {
       nextErrors.date = "Please select a date";
-    } else if (reservedDates.includes(form.date)) {
-      nextErrors.date = "This date is already reserved";
     }
     if (!form.time) nextErrors.time = "Please select a time";
     if (!form.venue.trim()) nextErrors.venue = "Venue is required";
@@ -327,7 +297,6 @@ export default function ReservationsSection() {
                           {Array.from({ length: daysInMonth }).map((_, i) => {
                             const day = i + 1;
                             const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                            const isReserved = reservedDates.includes(dateStr);
                             const isSelected = form.date === dateStr;
                             
                             const d = new Date();
@@ -335,10 +304,9 @@ export default function ReservationsSection() {
                             const localDate = new Date(d.getTime() - (offset * 60 * 1000));
                             const todayStr = localDate.toISOString().split('T')[0];
                             const isPast = dateStr < todayStr;
-                            const isSelectable = !isPast && !isReserved;
+                            const isSelectable = !isPast;
 
                             let dayCls = styles.datepickerDay;
-                            if (isReserved) dayCls += ` ${styles.datepickerDayReserved}`;
                             if (isPast) dayCls += ` ${styles.datepickerDayPast}`;
                             if (isSelected) dayCls += ` ${styles.datepickerDaySelected}`;
 
@@ -353,18 +321,13 @@ export default function ReservationsSection() {
                                   setShowDatePicker(false);
                                 }}
                                 className={dayCls}
-                                title={isReserved ? "Already Reserved" : ""}
                               >
                                 {day}
                               </button>
                             );
                           })}
                         </div>
-                        <div className={styles.datepickerLegend}>
-                          <div className={styles.legendItem}>
-                            <span className={styles.legendDot} style={{ background: '#f8d7da', border: '1px solid #f5c6cb' }} /> Booked
-                          </div>
-                        </div>
+
                       </div>
                     )}
                   </div>
