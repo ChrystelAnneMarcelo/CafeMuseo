@@ -8,7 +8,8 @@ import { supabase } from "../../lib/supabase";
 
 function isVideo(url) {
   if (!url) return false;
-  return url.startsWith("data:video/") || !!url.match(/\.(mp4|webm|ogg)$/i);
+  const cleanUrl = url.split(/[?#]/)[0];
+  return cleanUrl.startsWith("data:video/") || !!cleanUrl.match(/\.(mp4|webm|ogg|mov|m4v)$/i);
 }
 
 function ReviewCard({ review, onClick }) {
