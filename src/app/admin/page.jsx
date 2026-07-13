@@ -1,77 +1,275 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../../lib/supabase";
-import { Loader2, Check, X, User, Mail, Phone, MapPin, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { Loader2, Check, X, User, Mail, Phone, MapPin, ChevronLeft, ChevronRight, CalendarDays, Trash2 } from "lucide-react";
 import styles from "./Admin.module.css";
 
-function AdminCalendar({ bookings }) {
+function AdminCalendar({ bookings, setApproveModal, setCancelModal, setConfirmModal, updatingId, getResolvedStatus }) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState("month"); // "month" | "week"
+
+  // Get local date string for initial selection (today)
+  const getLocalDateString = (d = new Date()) => {
+    const offset = d.getTimezoneOffset();
+    const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+    return localDate.toISOString().split("T")[0];
+  };
+
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const monthName = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
+  // Navigation Logic
+  const handlePrev = () => {
+    if (viewMode === "month") {
+      setCurrentDate(new Date(year, month - 1, 1));
+    } else {
+      const nextD = new Date(currentDate);
+      nextD.setDate(currentDate.getDate() - 7);
+      setCurrentDate(nextD);
+    }
+  };
+
+  const handleNext = () => {
+    if (viewMode === "month") {
+      setCurrentDate(new Date(year, month + 1, 1));
+    } else {
+      const nextD = new Date(currentDate);
+      nextD.setDate(currentDate.getDate() + 7);
+      setCurrentDate(nextD);
+    }
+  };
+
+  // Helper to check if date matches selectedDate
+  const isSelected = (dateStr) => dateStr === selectedDate;
+
+  // Month View Days Generation
+  const monthDays = [];
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const approvedDates = new Set(
-    bookings.filter(b => b.status === "Approved").map(b => b.date)
-  );
-  const pendingDates = new Set(
-    bookings.filter(b => b.status === "Pending" || !b.status).map(b => b.date)
-  );
-
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-
-  const days = [];
   for (let i = 0; i < firstDay; i++) {
-    days.push(<div key={`empty-${i}`} className={styles.calendarDayEmpty} />);
+    monthDays.push(<div key={`empty-${i}`} className={styles.calendarDayEmpty} />);
   }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const isApproved = approvedDates.has(dateStr);
-    const isPending = pendingDates.has(dateStr);
-    const todayStr = new Date().toISOString().split("T")[0];
+
+  const todayStr = getLocalDateString(new Date());
+
+  // Week View Days Generation
+  const startOfWeek = new Date(currentDate);
+  const dayIndex = startOfWeek.getDay();
+  startOfWeek.setDate(startOfWeek.getDate() - dayIndex);
+
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const dayDate = new Date(startOfWeek);
+    dayDate.setDate(startOfWeek.getDate() + i);
+    weekDays.push(dayDate);
+  }
+
+  // Set Title based on View Mode
+  let calendarTitle = "";
+  if (viewMode === "month") {
+    calendarTitle = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  } else {
+    const first = weekDays[0];
+    const last = weekDays[6];
+    if (first.getMonth() === last.getMonth()) {
+      calendarTitle = first.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    } else {
+      const firstMonth = first.toLocaleDateString("en-US", { month: "short" });
+      const lastMonth = last.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+      calendarTitle = `${firstMonth} - ${lastMonth}`;
+    }
+  }
+
+  // Gather active bookings for selected date side panel
+  const activeBookings = bookings.filter(b => b.date === selectedDate);
+  const formattedSelectedDate = new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+
+  const renderCell = (dayNumber, dateStr, key) => {
+    const dayBookings = bookings.filter(b => b.date === dateStr);
+    const approved = dayBookings.filter(b => b.status === "Approved");
+    const pending = dayBookings.filter(b => b.status === "Pending" || !b.status);
+
+    const isApp = approved.length > 0;
+    const isPend = pending.length > 0;
     const isPast = dateStr < todayStr;
+    const isSel = isSelected(dateStr);
 
     let cls = styles.calendarDay;
-    if (isApproved) cls += ` ${styles.calendarDayApproved}`;
-    else if (isPending) cls += ` ${styles.calendarDayPending}`;
+    if (isApp) cls += ` ${styles.calendarDayApproved}`;
+    else if (isPend) cls += ` ${styles.calendarDayPending}`;
     if (isPast) cls += ` ${styles.calendarDayPast}`;
     if (dateStr === todayStr) cls += ` ${styles.calendarDayToday}`;
+    if (isSel) cls += ` ${styles.calendarDaySelected}`;
 
-    days.push(
-      <div key={d} className={cls} title={isApproved ? "Reserved" : isPending ? "Pending" : ""}>
-        <span>{d}</span>
-        {isApproved && <span className={styles.calendarDot} style={{ background: "#155724" }} />}
-        {isPending && !isApproved && <span className={styles.calendarDot} style={{ background: "#856404" }} />}
+    const totalCount = approved.length + pending.length;
+
+    return (
+      <div 
+        key={key} 
+        className={cls} 
+        onClick={() => setSelectedDate(dateStr)}
+        title={`${dayBookings.length} booking(s)`}
+      >
+        <span>{dayNumber}</span>
+        {totalCount > 1 ? (
+          <span className={`${styles.calendarDayBadge} ${
+            isApp && !isPend ? styles.calendarDayBadgeApproved :
+            !isApp && isPend ? styles.calendarDayBadgePending :
+            styles.calendarDayBadgeMixed
+          }`}>
+            {totalCount}
+          </span>
+        ) : totalCount === 1 ? (
+          <span 
+            className={styles.calendarDot} 
+            style={{ background: isApp ? "#28a745" : "#ffc107" }} 
+          />
+        ) : null}
       </div>
     );
+  };
+
+  const daysToRender = [];
+  if (viewMode === "month") {
+    // Render empty prepended cells for month padding
+    daysToRender.push(...monthDays);
+    // Render calendar days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      daysToRender.push(renderCell(d, dateStr, `day-${d}`));
+    }
+  } else {
+    // Render week days
+    weekDays.forEach((dayDate, idx) => {
+      const dNum = dayDate.getDate();
+      const dateStr = getLocalDateString(dayDate);
+      daysToRender.push(renderCell(dNum, dateStr, `week-day-${idx}`));
+    });
   }
 
   return (
-    <div className={styles.calendarCard}>
-      <div className={styles.calendarHeader}>
-        <button onClick={prevMonth} className={styles.calendarNav}><ChevronLeft size={18} /></button>
-        <h3 className={styles.calendarTitle}>{monthName}</h3>
-        <button onClick={nextMonth} className={styles.calendarNav}><ChevronRight size={18} /></button>
-      </div>
-      <div className={styles.calendarWeekdays}>
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
-          <div key={d} className={styles.calendarWeekday}>{d}</div>
-        ))}
-      </div>
-      <div className={styles.calendarGrid}>
-        {days}
-      </div>
-      <div className={styles.calendarLegend}>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: "#155724" }} /> Reserved
+    <div className={styles.calendarTabContainer}>
+      {/* Left side: Calendar Grid */}
+      <div className={styles.calendarCard}>
+        {/* Toggle Mode */}
+        <div className={styles.viewToggle}>
+          <button 
+            onClick={() => setViewMode("month")} 
+            className={`${styles.viewToggleBtn} ${viewMode === "month" ? styles.viewToggleBtnActive : ""}`}
+          >
+            Month
+          </button>
+          <button 
+            onClick={() => setViewMode("week")} 
+            className={`${styles.viewToggleBtn} ${viewMode === "week" ? styles.viewToggleBtnActive : ""}`}
+          >
+            Week
+          </button>
         </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: "#856404" }} /> Pending
+
+        <div className={styles.calendarHeader}>
+          <button onClick={handlePrev} className={styles.calendarNav}><ChevronLeft size={18} /></button>
+          <h3 className={styles.calendarTitle}>{calendarTitle}</h3>
+          <button onClick={handleNext} className={styles.calendarNav}><ChevronRight size={18} /></button>
         </div>
+        <div className={styles.calendarWeekdays}>
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
+            <div key={d} className={styles.calendarWeekday}>{d}</div>
+          ))}
+        </div>
+        <div className={styles.calendarGrid}>
+          {daysToRender}
+        </div>
+        <div className={styles.calendarLegend}>
+          <div className={styles.legendItem}>
+            <span className={styles.legendDot} style={{ background: "#28a745" }} /> Approved
+          </div>
+          <div className={styles.legendItem}>
+            <span className={styles.legendDot} style={{ background: "#ffc107" }} /> Pending
+          </div>
+        </div>
+      </div>
+
+      {/* Right side: Selected Day Detail list */}
+      <div className={styles.sidePanel}>
+        <h3 className={styles.sidePanelHeader}>Reservations: {formattedSelectedDate}</h3>
+        {activeBookings.length === 0 ? (
+          <div className={styles.sidePanelEmpty}>No bookings scheduled for this date.</div>
+        ) : (
+          <div className={styles.sidePanelList}>
+            {activeBookings.map(b => {
+              const resStatus = getResolvedStatus(b);
+              return (
+                <div key={b.id} className={styles.miniCard}>
+                  <div className={styles.miniCardHeader}>
+                    <h4 className={styles.miniCardTitle}>{b.name}</h4>
+                    <span className={`${styles.badge} ${styles["badge" + resStatus]}`}>
+                      {resStatus}
+                    </span>
+                  </div>
+                  
+                  <div className={styles.miniCardRow}>
+                    <strong>Time:</strong> {b.time}
+                  </div>
+                  <div className={styles.miniCardRow}>
+                    <strong>Guests:</strong> {b.guests} Pax ({b.type})
+                  </div>
+                  <div className={styles.miniCardRow}>
+                    <strong>Venue:</strong> {b.venue}
+                  </div>
+                  <div className={styles.miniCardRow}>
+                    <strong>Contact:</strong> {b.phone} | {b.email}
+                  </div>
+                  {b.special_requests && (
+                    <div className={styles.miniCardNotes}>
+                      <strong>Notes:</strong> {b.special_requests}
+                    </div>
+                  )}
+
+                  {/* Inline quick actions matching original design */}
+                  {resStatus === "Pending" && (
+                    <div className={styles.miniCardActions}>
+                      <button
+                        disabled={updatingId === b.id}
+                        onClick={() => setApproveModal({ show: true, booking: b, message: "" })}
+                        className={styles.miniApproveBtn}
+                      >
+                        {updatingId === b.id ? <Loader2 size={12} className={styles.spin} /> : <Check size={12} />} Approve
+                      </button>
+                      <button
+                        disabled={updatingId === b.id}
+                        onClick={() => setConfirmModal({ show: true, booking: b, action: "Delete", message: "" })}
+                        className={styles.miniDeclineBtn}
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    </div>
+                  )}
+
+                  {resStatus === "Approved" && (
+                    <div className={styles.miniCardActions}>
+                      <button
+                        disabled={updatingId === b.id}
+                        onClick={() => setCancelModal({ show: true, booking: b, reason: "" })}
+                        className={styles.miniCancelBtn}
+                      >
+                        <X size={12} /> Cancel Booking
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -186,7 +384,7 @@ export default function AdminPage() {
     setHistoryPage(1);
   };
 
-  const [declineModal, setDeclineModal] = useState({ show: false, booking: null, reason: "", action: "Declined" });
+  const [cancelModal, setCancelModal] = useState({ show: false, booking: null, reason: "" });
   const [approveModal, setApproveModal] = useState({ show: false, booking: null, message: "" });
   const [confirmModal, setConfirmModal] = useState({ show: false, booking: null, action: "", message: "" });
 
@@ -274,12 +472,18 @@ export default function AdminPage() {
 
     if (res.ok) {
       const result = await res.json();
-      setBookings(curr => curr.map(b => b.id === booking.id ? { ...b, status: newStatus } : b));
-      setDeclineModal({ show: false, booking: null, reason: "", action: "Declined" });
+      if (newStatus === "Delete") {
+        setBookings(curr => curr.filter(b => b.id !== booking.id));
+      } else {
+        setBookings(curr => curr.map(b => b.id === booking.id ? { ...b, status: newStatus } : b));
+      }
+      setCancelModal({ show: false, booking: null, reason: "" });
       setApproveModal({ show: false, booking: null, message: "" });
       setConfirmModal({ show: false, booking: null, action: "", message: "" });
-      if (!result.emailSent) {
+      if (!result.emailSent && newStatus !== "Delete") {
         alert(`Booking ${newStatus.toLowerCase()} successfully! (Email could not be sent - Resend free tier only allows sending to your registered email)`);
+      } else if (newStatus === "Delete") {
+        alert("Booking deleted successfully!");
       }
     } else {
       const errData = await res.json().catch(() => ({}));
@@ -342,14 +546,7 @@ export default function AdminPage() {
     return sortedAndFiltered.filter(b => ['Declined', 'Cancelled', 'Done', 'Expired'].includes(getResolvedStatus(b)));
   }, [sortedAndFiltered, todayStr]);
 
-  const isAlreadyBooked = useMemo(() => {
-    if (!approveModal.booking) return false;
-    return bookings.some(b =>
-      b.date === approveModal.booking.date &&
-      b.status === 'Approved' &&
-      b.id !== approveModal.booking.id
-    );
-  }, [bookings, approveModal.booking]);
+
 
   if (!loggedIn) {
     return (
@@ -406,9 +603,9 @@ export default function AdminPage() {
             <button
               disabled={updatingId === b.id}
               className={styles.declineBtn}
-              onClick={() => setDeclineModal({ show: true, booking: b, reason: "", action: "Declined" })}
+              onClick={() => setConfirmModal({ show: true, booking: b, action: "Delete", message: "" })}
             >
-              <X size={16} /> Decline
+              <Trash2 size={16} /> Delete
             </button>
           </div>
         )}
@@ -418,7 +615,7 @@ export default function AdminPage() {
             <button
               disabled={updatingId === b.id}
               className={styles.declineBtn}
-              onClick={() => setDeclineModal({ show: true, booking: b, reason: "", action: "Cancelled" })}
+              onClick={() => setCancelModal({ show: true, booking: b, reason: "" })}
             >
               {updatingId === b.id ? <Loader2 size={16} className={styles.spin} /> : <X size={16} />} Cancel Reservation
             </button>
@@ -454,7 +651,14 @@ export default function AdminPage() {
       {loading ? (
         <div className={styles.loader}><Loader2 className={styles.spin} size={32} /></div>
       ) : activeTab === "calendar" ? (
-        <AdminCalendar bookings={bookings} />
+        <AdminCalendar 
+          bookings={bookings} 
+          setApproveModal={setApproveModal}
+          setCancelModal={setCancelModal}
+          setConfirmModal={setConfirmModal}
+          updatingId={updatingId}
+          getResolvedStatus={getResolvedStatus}
+        />
       ) : (
         <>
           {/* Controls Bar for Filtering & Sorting */}
@@ -514,34 +718,32 @@ export default function AdminPage() {
         </>
       )}
 
-      {declineModal.show && (
+      {cancelModal.show && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
-            <h3>{declineModal.action === 'Cancelled' ? 'Cancel Reservation' : 'Decline Reservation'}</h3>
+            <h3>Cancel Reservation</h3>
             <p>
-              {declineModal.action === 'Cancelled'
-                ? <>Cancel {declineModal.booking?.name}&apos;s approved reservation for <strong>{declineModal.booking?.date}</strong>?</>
-                : <>Are you sure you want to decline {declineModal.booking?.name}&apos;s reservation?</>}
+              Cancel {cancelModal.booking?.name}&apos;s approved reservation for <strong>{cancelModal.booking?.date}</strong>?
             </p>
             <textarea
-              value={declineModal.reason}
-              onChange={e => setDeclineModal(prev => ({ ...prev, reason: e.target.value }))}
-              placeholder={declineModal.action === 'Cancelled' ? "Required: Reason for cancellation (this will be emailed to the customer)" : "Required: Reason for declining (this will be emailed to the customer)"}
+              value={cancelModal.reason}
+              onChange={e => setCancelModal(prev => ({ ...prev, reason: e.target.value }))}
+              placeholder="Required: Reason for cancellation (this will be emailed to the customer)"
               className={styles.reasonInput}
               required
             />
             <div className={styles.modalActions}>
-              <button onClick={() => setDeclineModal({ show: false, booking: null, reason: "", action: "Declined" })} className={styles.cancelBtn}>Go Back</button>
+              <button onClick={() => setCancelModal({ show: false, booking: null, reason: "" })} className={styles.cancelBtn}>Go Back</button>
               <button
                 type="button"
                 onClick={() => setConfirmModal({
                   show: true,
-                  booking: declineModal.booking,
-                  action: declineModal.action,
-                  message: declineModal.reason
+                  booking: cancelModal.booking,
+                  action: "Cancelled",
+                  message: cancelModal.reason
                 })}
                 className={styles.confirmDeclineBtn}
-                disabled={!declineModal.reason || !declineModal.reason.trim()}
+                disabled={!cancelModal.reason || !cancelModal.reason.trim()}
               >
                 Continue
               </button>
@@ -555,16 +757,10 @@ export default function AdminPage() {
           <div className={styles.modal}>
             <h3>Approve Reservation</h3>
             <p>Approve {approveModal.booking?.name}&apos;s reservation for <strong>{approveModal.booking?.date}</strong> at <strong>{approveModal.booking?.time}</strong>?</p>
-            {isAlreadyBooked && (
-              <p style={{ color: '#dc3545', fontSize: '13px', margin: '12px 0', fontWeight: 'bold' }}>
-                ⚠️ Warning: Another reservation is already approved for this date ({approveModal.booking?.date}). You cannot approve multiple reservations for the same day.
-              </p>
-            )}
             <div className={styles.modalActions}>
               <button onClick={() => setApproveModal({ show: false, booking: null, message: "" })} className={styles.cancelBtn}>Cancel</button>
               <button
                 type="button"
-                disabled={isAlreadyBooked}
                 onClick={() => setConfirmModal({
                   show: true,
                   booking: approveModal.booking,
@@ -583,18 +779,25 @@ export default function AdminPage() {
       {confirmModal.show && (
         <div className={styles.modalOverlay} style={{ zIndex: 110 }}>
           <div className={styles.modal}>
-            <h3 style={{ textTransform: 'capitalize' }}>Confirm {confirmModal.action === 'Approved' ? 'Approval' : confirmModal.action === 'Cancelled' ? 'Cancellation' : 'Decline'}</h3>
+            <h3 style={{ textTransform: "capitalize" }}>Confirm {confirmModal.action === "Approved" ? "Approval" : confirmModal.action === "Cancelled" ? "Cancellation" : confirmModal.action === "Delete" ? "Deletion" : "Decline"}</h3>
             <p>
               Are you sure you want to <strong>{
-                confirmModal.action === 'Approved' ? 'approve' :
-                  confirmModal.action === 'Declined' ? 'decline' :
-                    confirmModal.action === 'Cancelled' ? 'cancel' :
-                      confirmModal.action.toLowerCase()
+                confirmModal.action === "Approved" ? "approve" :
+                  confirmModal.action === "Declined" ? "decline" :
+                    confirmModal.action === "Cancelled" ? "cancel" :
+                      confirmModal.action === "Delete" ? "delete" :
+                        confirmModal.action.toLowerCase()
               }</strong> the reservation for <strong>{confirmModal.booking?.name}</strong>?
             </p>
-            <p style={{ fontSize: '13px', color: '#666', marginTop: '10px' }}>
-              An email notification will be sent to <strong>{confirmModal.booking?.email}</strong>.
-            </p>
+            {confirmModal.action === "Delete" ? (
+              <p style={{ fontSize: "13px", color: "#dc3545", fontWeight: "500", marginTop: "10px" }}>
+                ⚠️ This booking will be permanently deleted from the database. No email notification will be sent to the customer.
+              </p>
+            ) : (
+              <p style={{ fontSize: "13px", color: "#666", marginTop: "10px" }}>
+                An email notification will be sent to <strong>{confirmModal.booking?.email}</strong>.
+              </p>
+            )}
             <div className={styles.modalActions} style={{ marginTop: '24px' }}>
               <button
                 onClick={() => setConfirmModal({ show: false, booking: null, action: "", message: "" })}
