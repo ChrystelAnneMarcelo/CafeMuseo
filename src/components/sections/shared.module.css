@@ -51,7 +51,10 @@
 .fieldInput,
 .textareaInput,
 .selectInput {
+  box-sizing: border-box;
+  display: block;
   width: 100%;
+  max-width: 100%;
   border: 1px solid rgba(44, 26, 14, 0.12);
   background: #f3ede4;
   color: #2c1a0e;
