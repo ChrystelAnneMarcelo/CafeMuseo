@@ -8,6 +8,7 @@ import {
   Star,
   UtensilsCrossed,
   Users,
+  Pizza,
 } from "lucide-react";
 
 export const NAV_LINKS = ["Menu", "Gallery", "Reservations", "Hours", "About", "Reviews"];
@@ -111,6 +112,33 @@ export const MENU_CATEGORIES = [
     ],
   },
   {
+    id: "pizza",
+    label: "Pizza",
+    icon: Pizza,
+    timeNote: "Available 12–5 PM only",
+    pizzaNote: "*add ₱20 for honey",
+    pizzaSections: [
+      {
+        section: "Savory",
+        items: [
+          { name: "White", desc: "Classic white pizza with mozzarella and tomato sauce", price: "₱320", isNew: true },
+          { name: "Basil & Tomato", desc: "Basil and tomato on a white pizza", price: "₱320", isNew: true },
+          { name: "Burger", desc: "Seasoned ground beef, melted cheese, and onions on a classic pizza base", price: "₱350", isNew: true },
+          { name: "Pesto & Tomato", desc: "Rich basil pesto and fresh tomatoes on a white pizza base", price: "₱350", isNew: true },
+          { name: "Truffle", desc: "Earthy truffle oil, wild mushrooms, and melted mozzarella", price: "₱380", isNew: true },
+        ],
+      },
+      {
+        section: "Sweet",
+        items: [
+          { name: "Sweet Potato", desc: "Creamy sweet potato topping with melted cheese", price: "₱350", isNew: true },
+          { name: "Nutella & Banana", desc: "Rich Nutella spread topped with fresh banana slices", price: "₱350", isNew: true },
+          { name: "Smores", desc: "Melted chocolate, toasted marshmallows, and crushed graham crackers", price: "₱350", isNew: true },
+        ]
+      },
+    ],
+  },
+  {
     id: "snacks",
     label: "Snacks",
     icon: IceCream,
@@ -135,7 +163,6 @@ export const MENU_CATEGORIES = [
         name: "Cheesecake French Toast",
         desc: "Brioche stuffed with cheesecake, topped with whipped cream",
         price: "₱195",
-        isNew: true,
       },
       {
         name: "Croffle",
@@ -230,8 +257,36 @@ export const MENU_CATEGORIES = [
           { name: "Mixed Berries", md: "80", lg: "90" },
         ],
       },
+      {
+        section: "Milk Series",
+        columns: [
+          {key: "lg", label: "Large"},
+        ],
+        items: [
+          { name: "Sweet Potato Milk", lg: "120", isNew: true },
+          { name: "Strawberry Milk", lg: "120", isNew: true },
+          { name: "Avocado Milk", lg: "120", isNew: true },
+        ],
+      },
+      {
+        section: "Refresher Series",
+        columns: [
+          {key: "lg", label: "Large"}
+        ],
+        items: [
+          { name: "Lemon Cucumber", lg: "80", isNew: true },
+          { name: "Honey Lemon", lg: "80", isNew: true },
+          { name: "Peach Passionfruit Tea", lg: "80", isNew: true },
+          { name: "Berry Mix Tea", lg: "95", isNew: true },
+          { name: "Lychee Tea", lg: "95", isNew: true },
+          { name: "Blueberry Tea", lg: "95", isNew: true },
+          { name: "Grapefruit Tea", lg: "95", isNew: true },
+        ]
+      }
     ],
   },
+
+    
 ];
 
 export const GALLERY_PHOTOS = [

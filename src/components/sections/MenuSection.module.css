@@ -148,6 +148,37 @@
   gap: 24px;
 }
 
+.pizzaLayout {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.pizzaNote {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-style: italic;
+  color: #7a6557;
+}
+
+.pizzaSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pizzaSectionTitle {
+  margin: 0;
+  font-family: var(--font-playfair-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: #2c1a0e;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(192, 154, 107, 0.35);
+}
+
+
 .drinkTableWrap {
   margin-bottom: 0;
 }
@@ -218,6 +249,9 @@
 }
 
 .drinkItemName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: #2c1a0e;
   font-size: 14px;
   font-weight: 500;

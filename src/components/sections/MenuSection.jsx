@@ -32,7 +32,10 @@ function DrinkTable({ section, items, note, columns }) {
             key={item.name}
             style={{ gridTemplateColumns: `1fr repeat(${colCount}, 80px)` }}
           >
-            <span className={styles.drinkItemName}>{item.name}</span>
+            <span className={styles.drinkItemName}>
+                {item.name}
+                {item.isNew ? <span className={shared.badge}>New</span> : null}
+              </span>
             {columns.map((col) => (
               <span className={styles.drinkPriceCell} key={col.key}>
                 {item[col.key] ? `₱${item[col.key]}` : "—"}
@@ -41,6 +44,39 @@ function DrinkTable({ section, items, note, columns }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function PizzaMenu({ pizzaSections, pizzaNote }) {
+  return (
+    <div className={styles.pizzaLayout}>
+      {pizzaNote && (
+        <p className={styles.pizzaNote}>{pizzaNote}</p>
+      )}
+      {pizzaSections.map((section) => (
+        <div key={section.section} className={styles.pizzaSection}>
+          <h4 className={styles.pizzaSectionTitle}>{section.section}</h4>
+          <div className={styles.menuGrid}>
+            {section.items.map((item) => (
+              <article className={styles.menuCard} key={item.name}>
+                <div className={styles.menuCardInner}>
+                  <div className={styles.menuCardText}>
+                    <div className={styles.menuTitleRow}>
+                      <h3 className={styles.menuCardTitle}>{item.name}</h3>
+                      {item.isNew ? <span className={shared.badge}>New</span> : null}
+                    </div>
+                    {item.desc && (
+                      <p className={styles.menuCardDescription}>{item.desc}</p>
+                    )}
+                  </div>
+                  <span className={styles.menuCardPrice}>{item.price}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -78,7 +114,6 @@ export default function MenuSection() {
                 name: "Cheesecake French Toast",
                 desc: "Brioche stuffed with cheesecake, topped with whipped cream",
                 price: "₱195",
-                newLabel: "New",
               },
               {
                 name: "Special Sizzling Sisig",
@@ -139,6 +174,13 @@ export default function MenuSection() {
           </div>
         ) : null}
 
+        {category?.pizzaSections ? (
+          <PizzaMenu
+            pizzaSections={category.pizzaSections}
+            pizzaNote={category.pizzaNote}
+          />
+        ) : null}
+
         {category?.items ? (
           <div className={styles.menuGrid}>
             {category.items.map((item) => (
@@ -168,7 +210,7 @@ export default function MenuSection() {
             rel="noreferrer"
             className={styles.menuPdfLink}
           >
-            View full menu PDF ↗
+            View full menu PDF
           </a>
           <a
             href="/SignaturesMenu.pdf"
@@ -177,7 +219,7 @@ export default function MenuSection() {
             className={styles.menuPdfLink}
             style={{ marginLeft: 16 }}
           >
-            View signatures menu PDF ↗
+            View signatures menu PDF
           </a>
         </div>
       </div>
