@@ -125,6 +125,11 @@ export default function MenuSection() {
                 desc: "Add Oreo +₱15, Add Banana & Almond +₱30.",
                 price: "from ₱65",
               },
+              {
+                name: "Beybingka",
+                desc: "Cafe Museo's signature bibingka. Box of 6 for ₱220.",
+                price: "₱40/pc",
+              },
             ].map((item) => (
               <article className={styles.signatureCard} key={item.name}>
                 <div className={styles.cardTop}>

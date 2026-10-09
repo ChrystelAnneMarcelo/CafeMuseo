@@ -174,6 +174,12 @@ export const MENU_CATEGORIES = [
         desc: "Add Oreo +₱15, Add Banana & Almond +₱30.",
         price: "₱65",
       },
+      {
+        name: "Beybingka",
+        desc: "Cafe Museo's signature bibingka. Box of 6 for ₱220.",
+        price: "₱40/pc",
+        isSignature: true,
+      },
     ],
   },
   {
