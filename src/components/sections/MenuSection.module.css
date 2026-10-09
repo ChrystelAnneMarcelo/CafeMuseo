@@ -37,17 +37,30 @@
 }
 
 .cardGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-direction: row;
   gap: 0;
   margin-top: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  /* hide scrollbar visually */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cardGrid::-webkit-scrollbar {
+  display: none;
 }
 
 .signatureCard {
+  flex: 0 0 220px;
+  min-width: 220px;
   min-height: 159.75px;
   padding: 21px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
+  scroll-snap-align: start;
 }
 
 .cardTop {
@@ -338,10 +351,6 @@
 }
 
 @media (max-width: 900px) {
-  .cardGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .menuGrid {
     grid-template-columns: 1fr;
   }
@@ -353,7 +362,6 @@
     padding-bottom: 48px;
   }
 
-  .cardGrid,
   .menuGrid {
     grid-template-columns: 1fr;
   }
