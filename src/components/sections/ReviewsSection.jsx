@@ -172,7 +172,7 @@ function StarPicker({ value, onChange }) {
 
 export default function ReviewsSection({ previewMode = false }) {
   const [dbReviews, setDbReviews] = useState([]);
-  const [form, setForm] = useState({ name: "", rating: 0, text: "", type: "Cafe Visit", mediaFiles: [] });
+  const [form, setForm] = useState({ name: "", rating: 0, text: "", type: "Cafe Visit", mediaFiles: [], anonymous: false });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -228,7 +228,7 @@ export default function ReviewsSection({ previewMode = false }) {
     if (submitting) return;
 
     const nextErrors = {};
-    if (!form.name.trim()) nextErrors.name = "Please enter your name";
+    if (!form.anonymous && !form.name.trim()) nextErrors.name = "Please enter your name";
     if (form.rating === 0) nextErrors.rating = "Please select a rating";
     if (form.text.trim().length < 10) nextErrors.text = "Please write at least a sentence";
 
@@ -259,7 +259,7 @@ export default function ReviewsSection({ previewMode = false }) {
       }
 
       const { data, error } = await supabase.from('reviews').insert({
-        name: form.name.trim(),
+        name: form.anonymous ? "Anonymous" : form.name.trim(),
         rating: form.rating,
         quote: form.text.trim(),
         visit_type: form.type,
@@ -267,7 +267,7 @@ export default function ReviewsSection({ previewMode = false }) {
       });
 
       if (!error) {
-        setForm({ name: "", rating: 0, text: "", type: "Cafe Visit", mediaFiles: [] });
+        setForm({ name: "", rating: 0, text: "", type: "Cafe Visit", mediaFiles: [], anonymous: false });
         setSubmitted(true);
         setTimeout(() => setSubmitted(false), 4000);
         fetchReviews();
@@ -355,17 +355,35 @@ export default function ReviewsSection({ previewMode = false }) {
 
             <form onSubmit={handleSubmit} className={styles.reviewForm}>
               <div>
-                <label className={shared.fieldLabel}>Your Name *</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(event) => {
-                    setForm((current) => ({ ...current, name: event.target.value }));
-                    setErrors((current) => ({ ...current, name: undefined }));
-                  }}
-                  placeholder="Juan dela Cruz"
-                  className={`${shared.fieldInput} ${errors.name ? shared.fieldInputError : ""}`}
-                />
+                <label className={shared.fieldLabel}>Your Name</label>
+                <div className={styles.typeSelectorRow} style={{ marginBottom: form.anonymous ? 0 : 10 }}>
+                  {[{ label: "Use my name", value: false }, { label: "Stay anonymous", value: true }].map(({ label, value }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      className={`${styles.typeSelectorBtn} ${form.anonymous === value ? styles.typeSelectorBtnActive : ""}`}
+                      onClick={() => {
+                        setForm((c) => ({ ...c, anonymous: value, name: value ? "" : c.name }));
+                        setErrors((c) => ({ ...c, name: undefined }));
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {!form.anonymous && (
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(event) => {
+                      setForm((current) => ({ ...current, name: event.target.value }));
+                      setErrors((current) => ({ ...current, name: undefined }));
+                    }}
+                    placeholder="Juan dela Cruz"
+                    className={`${shared.fieldInput} ${errors.name ? shared.fieldInputError : ""}`}
+                    style={{ marginTop: 8 }}
+                  />
+                )}
                 {errors.name ? <p className={shared.fieldError}>{errors.name}</p> : null}
               </div>
 
